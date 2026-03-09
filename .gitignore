@@ -1,0 +1,5 @@
+# Only commit compressed web photos, not originals
+photos/*.JPG
+photos/*.jpg
+!photos/web/
+.DS_Store

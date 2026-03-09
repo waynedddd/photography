@@ -105,6 +105,7 @@
       box-shadow: 0 8px 40px rgba(0,0,0,0.7);
       transition: box-shadow 0.5s;
       background: #111;
+      backface-visibility: hidden;
     }
 
     .cover.active .cover-img-wrap {
@@ -356,10 +357,10 @@ const covers = document.querySelectorAll('.cover');
 // Center cover: face-on, z-index high
 // Left covers: rotateY(+55deg), shifted left, stacked
 // Right covers: rotateY(-55deg), shifted right, stacked
-const TILT = 65;          // degrees
-const SPACING = 55;       // px between stacked covers (tighter stack)
-const CENTER_GAP = 500;   // px gap from center to first tilted (push to edges)
-const Z_STEP = 50;        // z offset per step from center
+const TILT = 72;          // degrees (very tilted = narrow profile on sides)
+const SPACING = 35;       // px between stacked covers
+const CENTER_GAP = 480;   // px gap from center to first tilted
+const Z_STEP = 80;        // z offset per step (push much further back)
 
 function layout() {
   covers.forEach((cover, i) => {
@@ -390,9 +391,17 @@ function layout() {
     }
 
     cover.style.transform = `translateX(${tx}px) translateZ(${tz}px) rotateY(${ry}deg)`;
-    cover.style.opacity = op;
     cover.style.zIndex = zi;
-    cover.style.filter = offset === 0 ? 'brightness(1)' : `brightness(${Math.max(0.2, 0.35 - Math.abs(offset) * 0.03)})`;
+
+    // Only show a few covers on each side, hide the rest
+    const absOff = Math.abs(offset);
+    if (absOff > 3) {
+      cover.style.opacity = 0;
+      cover.style.filter = 'brightness(0)';
+    } else {
+      cover.style.opacity = 1;
+      cover.style.filter = offset === 0 ? 'brightness(1)' : `brightness(${Math.max(0.1, 0.3 - absOff * 0.08)})`;
+    }
     cover.classList.toggle('active', offset === 0);
   });
 

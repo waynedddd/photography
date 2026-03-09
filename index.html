@@ -301,17 +301,19 @@
     @media (max-width: 768px) {
       header { padding: 1rem 1.5rem; }
       .header-links { display: none; }
-      .cover.orient-v { width: 42vw; height: 60vh; margin-left: -21vw; margin-top: -33vh; }
-      .cover.orient-h { width: 65vw; height: 53vh; margin-left: -32.5vw; margin-top: -30vh; }
-      .coverflow { height: 360px; }
+      .cover.orient-v { width: 55vw; height: 65vh; margin-left: -27.5vw; margin-top: -35vh; }
+      .cover.orient-h { width: 85vw; height: 55vh; margin-left: -42.5vw; margin-top: -30vh; }
+      .coverflow { height: 400px; }
       .info { padding: 0 1.5rem 2.5rem; }
       .info-desc { display: none; }
       .counter { display: none; }
+      .track-tick-label { font-size: 0.45rem; }
     }
 
     @media (max-width: 480px) {
-      .cover.orient-v { width: 38vw; height: 55vh; margin-left: -19vw; margin-top: -30vh; }
-      .cover.orient-h { width: 58vw; height: 48vh; margin-left: -29vw; margin-top: -27vh; }
+      .cover.orient-v { width: 65vw; height: 60vh; margin-left: -32.5vw; margin-top: -33vh; }
+      .cover.orient-h { width: 90vw; height: 50vh; margin-left: -45vw; margin-top: -28vh; }
+      .info-title { font-size: 1.5rem; }
     }
 
     /* ─── Fade in ─── */
@@ -429,12 +431,13 @@ function layout() {
       cover.style.marginTop = '';
     } else {
       // Side cards: same height as center, fixed width
-      cover.style.height = '60vh';
-      cover.style.width = '220px';
-      cover.style.marginLeft = '-110px';
-      cover.style.marginTop = '-33vh';
+      const isMobile = window.innerWidth <= 768;
+      cover.style.height = isMobile ? '50vh' : '60vh';
+      cover.style.width = isMobile ? '120px' : '220px';
+      cover.style.marginLeft = isMobile ? '-60px' : '-110px';
+      cover.style.marginTop = isMobile ? '-28vh' : '-33vh';
 
-      const gap = window.innerWidth * 0.3;
+      const gap = window.innerWidth * (isMobile ? 0.42 : 0.3);
 
       if (offset < 0) {
         tx = -gap + (offset + 1) * SPACING;
@@ -452,8 +455,9 @@ function layout() {
     cover.style.transform = `translateX(${tx}px) translateZ(${tz}px) rotateY(${ry}deg)`;
     cover.style.zIndex = zi;
 
-    // Show up to 6 on each side
-    if (absOff > 6) {
+    // Show up to 6 on each side (3 on mobile)
+    const maxSide = window.innerWidth <= 768 ? 3 : 6;
+    if (absOff > maxSide) {
       cover.style.opacity = '0';
     } else {
       cover.style.opacity = '1';

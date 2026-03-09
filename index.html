@@ -82,7 +82,7 @@
       left: 50%;
       top: 50%;
       transform-style: preserve-3d;
-      transition: all 0.55s cubic-bezier(0.25, 1, 0.5, 1);
+      transition: all 0.55s cubic-bezier(0.25, 1, 0.5, 1), filter 0.55s;
       cursor: pointer;
       will-change: transform, opacity, z-index;
     }
@@ -356,10 +356,10 @@ const covers = document.querySelectorAll('.cover');
 // Center cover: face-on, z-index high
 // Left covers: rotateY(+55deg), shifted left, stacked
 // Right covers: rotateY(-55deg), shifted right, stacked
-const TILT = 60;          // degrees
-const SPACING = 60;       // px between stacked covers
-const CENTER_GAP = 320;   // px gap from center to first tilted (wider focus zone)
-const Z_STEP = 40;        // z offset per step from center
+const TILT = 65;          // degrees
+const SPACING = 55;       // px between stacked covers (tighter stack)
+const CENTER_GAP = 500;   // px gap from center to first tilted (push to edges)
+const Z_STEP = 50;        // z offset per step from center
 
 function layout() {
   covers.forEach((cover, i) => {
@@ -378,20 +378,21 @@ function layout() {
       tx = -CENTER_GAP + offset * SPACING;
       ry = TILT;
       tz = -Math.abs(offset) * Z_STEP;
-      op = Math.max(0, 0.35 - Math.abs(offset) * 0.04);
+      op = 1;
       zi = total + offset;
     } else {
       // Right side
       tx = CENTER_GAP + (offset - 1) * SPACING;
       ry = -TILT;
       tz = -offset * Z_STEP;
-      op = Math.max(0, 0.35 - offset * 0.04);
+      op = 1;
       zi = total - offset;
     }
 
     cover.style.transform = `translateX(${tx}px) translateZ(${tz}px) rotateY(${ry}deg)`;
     cover.style.opacity = op;
     cover.style.zIndex = zi;
+    cover.style.filter = offset === 0 ? 'brightness(1)' : `brightness(${Math.max(0.2, 0.35 - Math.abs(offset) * 0.03)})`;
     cover.classList.toggle('active', offset === 0);
   });
 

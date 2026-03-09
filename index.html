@@ -56,38 +56,6 @@
     }
     .header-links a:hover { opacity: 1; }
 
-    /* ─── Filters ─── */
-    .filters {
-      display: flex;
-      gap: 0.4rem;
-      align-items: center;
-    }
-
-    .filter-btn {
-      background: none;
-      border: 1px solid rgba(255,255,255,0.1);
-      color: rgba(255,255,255,0.35);
-      font-family: var(--mono);
-      font-size: 0.55rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      padding: 0.35rem 0.8rem;
-      border-radius: 100px;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-
-    .filter-btn:hover {
-      color: rgba(255,255,255,0.6);
-      border-color: rgba(255,255,255,0.25);
-    }
-
-    .filter-btn.active {
-      color: #fff;
-      background: rgba(255,255,255,0.1);
-      border-color: rgba(255,255,255,0.3);
-    }
-
     /* ─── Coverflow Container ─── */
     .coverflow-wrap {
       position: fixed;
@@ -331,7 +299,6 @@
 
 <header>
   <div class="logo">W.</div>
-  <nav class="filters" id="filters"></nav>
   <div class="header-links">
     <a href="mailto:wayne@example.com">Contact</a>
     <a href="https://github.com/waynedddd" target="_blank">GitHub</a>
@@ -361,86 +328,50 @@
 
 <script>
 const photos = [
-  { url: 'photos/web/DSC01418_SnapseedCopy.jpg', title: 'Spring Couplets', meta: 'Haikou, 2025 · Sony', desc: 'Red banners catch the sea wind. A woman walks past without looking.', orient: 'h', place: 'Haikou' },
-  { url: 'photos/web/DSC01393_SnapseedCopy.jpg', title: 'Waterfront', meta: 'Haikou, 2025 · Sony', desc: 'Fishermen lunch by the theme park. Nobody rides the coasters.', orient: 'h', place: 'Haikou' },
-  { url: 'photos/web/DSC01385_SnapseedCopy.jpg', title: 'Unplayed', meta: 'Haikou, 2025 · Sony', desc: 'A white piano on dead grass. The church watches in silence.', orient: 'h', place: 'Haikou' },
-  { url: 'photos/web/IMG_1514.jpg', title: 'Red Stools', meta: 'Haikou, 2025 · iPhone', desc: 'Plastic chairs, old walls, and a lunch crowd that never left.', orient: 'v', place: 'Haikou' },
-  { url: 'photos/web/DSC01411_SnapseedCopy.jpg', title: 'Bone Setting', meta: 'Haikou, 2025 · Sony', desc: 'Traditional massage by the sea. Business is slow today.', orient: 'h', place: 'Haikou' },
-  { url: 'photos/web/DSC01464_SnapseedCopy.jpg', title: 'Shoreline', meta: 'Haikou, 2025 · Sony', desc: 'A man rides a horse on the beach, checking his phone.', orient: 'h', place: 'Haikou' },
-  { url: 'photos/web/DSC01484_SnapseedCopy.jpg', title: 'Shadow Play', meta: 'Haikou, 2025 · Sony', desc: 'A small dog stepping through patches of afternoon light.', orient: 'h', place: 'Haikou' },
-  { url: 'photos/web/DSC01433_SnapseedCopy.jpg', title: 'Market Day', meta: 'Haikou, 2025 · Sony', desc: 'Straw hats, fresh greens, and the hum of a morning market.', orient: 'h', place: 'Haikou' },
-  { url: 'photos/web/DSC01233_SnapseedCopy.jpg', title: 'Light Boxes', meta: 'Haikou, 2025 · Sony', desc: 'Two silhouettes pass the glowing billboards at night.', orient: 'h', place: 'Haikou' },
-  { url: 'photos/web/DSC01301_SnapseedCopy.jpg', title: 'Blue Wall', meta: 'Haikou, 2025 · Sony', desc: 'A painted seagull on a sky-blue wall. Almost real.', orient: 'v', place: 'Haikou' },
-  { url: 'photos/web/IMG_1495.jpg', title: 'Cable Bridge', meta: 'Haikou, 2025 · iPhone', desc: 'The bridge at dusk, cables fanning out like a harp.', orient: 'h', place: 'Haikou' },
-  { url: 'photos/web/DSC00875.jpg', title: 'Waiting', meta: 'China, 2025 · Sony', desc: 'A man sits between two electrical boxes like a portrait.', orient: 'h', place: 'Other' },
-  { url: 'photos/web/DSC00853.jpg', title: 'Passage', meta: 'China, 2025 · Sony', desc: 'Figures move through the covered walkway, umbrellas folded.', orient: 'h', place: 'Other' },
-  { url: 'photos/web/DSC00643.jpg', title: 'Dusk', meta: 'China, 2024 · Sony', desc: 'The city softens. Everything turns the same shade of blue.', orient: 'h', place: 'Other' },
-  { url: 'photos/web/DSC00375.jpg', title: 'Fog Season', meta: 'China, 2024 · Sony', desc: 'Trees vanish into the mist. Depth becomes a guess.', orient: 'h', place: 'Other' },
-  { url: 'photos/web/DSC00208.jpg', title: 'Night Walk', meta: 'China, 2024 · Sony', desc: 'Street lights draw long shadows. The city is still awake.', orient: 'h', place: 'Other' },
-  { url: 'photos/web/IMG_1452.jpg', title: 'Poster Wall', meta: 'Shanghai, 2024 · iPhone', desc: 'Workers chat in front of a wall of design posters.', orient: 'h', place: 'Shanghai' },
-  { url: 'photos/web/IMG_1453.jpg', title: 'Café Window', meta: 'Shanghai, 2024 · iPhone', desc: 'Polka dots on glass, a man scrolls through his phone.', orient: 'h', place: 'Shanghai' },
-  { url: 'photos/web/DSCF4527.jpg', title: 'The Cook', meta: 'Japan, 2025 · Fujifilm', desc: 'Wooden bowls, hung spoons, and a quiet man behind the counter.', orient: 'h', place: 'Japan' },
-  { url: 'photos/web/DSCF4749.jpg', title: 'Intersection', meta: 'Tokyo, 2025 · Fujifilm', desc: 'A delivery rider threads between a bus and a taxi.', orient: 'h', place: 'Japan' }
+  { url: 'photos/web/DSC01418_SnapseedCopy.jpg', title: 'Spring Couplets', meta: 'Haikou, 2025 · Sony', desc: 'Red banners catch the sea wind. A woman walks past without looking.', orient: 'h' },
+  { url: 'photos/web/DSC01393_SnapseedCopy.jpg', title: 'Waterfront', meta: 'Haikou, 2025 · Sony', desc: 'Fishermen lunch by the theme park. Nobody rides the coasters.', orient: 'h' },
+  { url: 'photos/web/DSC01385_SnapseedCopy.jpg', title: 'Unplayed', meta: 'Haikou, 2025 · Sony', desc: 'A white piano on dead grass. The church watches in silence.', orient: 'h' },
+  { url: 'photos/web/IMG_1514.jpg', title: 'Red Stools', meta: 'Haikou, 2025 · iPhone', desc: 'Plastic chairs, old walls, and a lunch crowd that never left.', orient: 'v' },
+  { url: 'photos/web/DSC01411_SnapseedCopy.jpg', title: 'Bone Setting', meta: 'Haikou, 2025 · Sony', desc: 'Traditional massage by the sea. Business is slow today.', orient: 'h' },
+  { url: 'photos/web/DSC01464_SnapseedCopy.jpg', title: 'Shoreline', meta: 'Haikou, 2025 · Sony', desc: 'A man rides a horse on the beach, checking his phone.', orient: 'h' },
+  { url: 'photos/web/DSC01484_SnapseedCopy.jpg', title: 'Shadow Play', meta: 'Haikou, 2025 · Sony', desc: 'A small dog stepping through patches of afternoon light.', orient: 'h' },
+  { url: 'photos/web/DSC01433_SnapseedCopy.jpg', title: 'Market Day', meta: 'Haikou, 2025 · Sony', desc: 'Straw hats, fresh greens, and the hum of a morning market.', orient: 'h' },
+  { url: 'photos/web/DSC01233_SnapseedCopy.jpg', title: 'Light Boxes', meta: 'Haikou, 2025 · Sony', desc: 'Two silhouettes pass the glowing billboards at night.', orient: 'h' },
+  { url: 'photos/web/DSC01301_SnapseedCopy.jpg', title: 'Blue Wall', meta: 'Haikou, 2025 · Sony', desc: 'A painted seagull on a sky-blue wall. Almost real.', orient: 'v' },
+  { url: 'photos/web/DSC00875.jpg', title: 'Waiting', meta: 'China, 2025 · Sony', desc: 'A man sits between two electrical boxes like a portrait.', orient: 'h' },
+  { url: 'photos/web/DSC00853.jpg', title: 'Passage', meta: 'China, 2025 · Sony', desc: 'Figures move through the covered walkway, umbrellas folded.', orient: 'h' },
+  { url: 'photos/web/DSC00643.jpg', title: 'Dusk', meta: 'China, 2024 · Sony', desc: 'The city softens. Everything turns the same shade of blue.', orient: 'h' },
+  { url: 'photos/web/DSC00375.jpg', title: 'Fog Season', meta: 'China, 2024 · Sony', desc: 'Trees vanish into the mist. Depth becomes a guess.', orient: 'h' },
+  { url: 'photos/web/DSC00208.jpg', title: 'Night Walk', meta: 'China, 2024 · Sony', desc: 'Street lights draw long shadows. The city is still awake.', orient: 'h' },
+  { url: 'photos/web/IMG_1495.jpg', title: 'Cable Bridge', meta: 'Haikou, 2025 · iPhone', desc: 'The bridge at dusk, cables fanning out like a harp.', orient: 'h' },
+  { url: 'photos/web/IMG_1452.jpg', title: 'Poster Wall', meta: 'Shanghai, 2024 · iPhone', desc: 'Workers chat in front of a wall of design posters.', orient: 'h' },
+  { url: 'photos/web/IMG_1453.jpg', title: 'Café Window', meta: 'Shanghai, 2024 · iPhone', desc: 'Polka dots on glass, a man scrolls through his phone.', orient: 'h' },
+  { url: 'photos/web/DSCF4527.jpg', title: 'The Cook', meta: 'Japan, 2025 · Fujifilm', desc: 'Wooden bowls, hung spoons, and a quiet man behind the counter.', orient: 'h' },
+  { url: 'photos/web/DSCF4749.jpg', title: 'Intersection', meta: 'Tokyo, 2025 · Fujifilm', desc: 'A delivery rider threads between a bus and a taxi.', orient: 'h' }
 ];
 
-// ─── Filter state ───
-let activeFilter = 'All';
-let filtered = [...photos];
-
 const container = document.getElementById('coverflow');
-let total = filtered.length;
+const total = photos.length;
 let current = 0;
 
-// ─── Build filter buttons ───
-const places = ['All', ...new Set(photos.map(p => p.place))];
-const filtersEl = document.getElementById('filters');
-places.forEach(place => {
-  const btn = document.createElement('button');
-  btn.className = 'filter-btn' + (place === 'All' ? ' active' : '');
-  btn.textContent = place;
-  btn.addEventListener('click', () => setFilter(place));
-  filtersEl.appendChild(btn);
+// ─── Build covers ───
+photos.forEach((p, i) => {
+  const el = document.createElement('div');
+  el.className = 'cover orient-' + (p.orient || 'v');
+  el.dataset.index = i;
+  el.innerHTML = `
+    <div class="cover-img-wrap">
+      <img src="${p.url}" alt="${p.title}" loading="lazy" draggable="false">
+    </div>
+    <div class="cover-reflection">
+      <img src="${p.url}" alt="" loading="lazy" draggable="false">
+    </div>
+  `;
+  el.addEventListener('click', () => goTo(i));
+  container.appendChild(el);
 });
 
-function setFilter(place) {
-  activeFilter = place;
-  filtered = place === 'All' ? [...photos] : photos.filter(p => p.place === place);
-  total = filtered.length;
-  current = 0;
-
-  // Update button states
-  document.querySelectorAll('.filter-btn').forEach(b => {
-    b.classList.toggle('active', b.textContent === place);
-  });
-
-  // Rebuild covers
-  rebuild();
-}
-
-function rebuild() {
-  container.innerHTML = '';
-  filtered.forEach((p, i) => {
-    const el = document.createElement('div');
-    el.className = 'cover orient-' + (p.orient || 'v');
-    el.dataset.index = i;
-    el.innerHTML = `
-      <div class="cover-img-wrap">
-        <img src="${p.url}" alt="${p.title}" loading="lazy" draggable="false">
-      </div>
-      <div class="cover-reflection">
-        <img src="${p.url}" alt="" loading="lazy" draggable="false">
-      </div>
-    `;
-    el.addEventListener('click', () => goTo(i));
-    container.appendChild(el);
-  });
-  covers = document.querySelectorAll('.cover');
-  layout();
-}
-
-// ─── Initial build ───
-let covers;
-rebuild();
+const covers = document.querySelectorAll('.cover');
 
 // ─── Core Coverflow layout ───
 // Center cover: face-on, z-index high
@@ -514,7 +445,7 @@ function layout() {
   });
 
   // Update info
-  const p = filtered[current];
+  const p = photos[current];
   const title = document.getElementById('infoTitle');
   const meta = document.getElementById('infoMeta');
   const desc = document.getElementById('infoDesc');

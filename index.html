@@ -4,837 +4,860 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Wayne — Photography</title>
-  <meta name="description" content="A visual journal by Wayne.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@300;400;500&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
   <style>
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    :root {
-      --bg: #0a0a0a;
-      --fg: #fff;
-      --muted: #666;
-      --dim: #333;
-      --serif: 'Instrument Serif', Georgia, serif;
-      --sans: 'Space Grotesk', system-ui, sans-serif;
-      --mono: 'Space Mono', monospace;
-    }
-
-    html { scroll-behavior: smooth; }
+    @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Mono:wght@400&display=swap');
 
     body {
-      font-family: var(--sans);
-      background: var(--bg);
-      color: var(--fg);
-      -webkit-font-smoothing: antialiased;
-      overflow-x: hidden;
+      background: #000;
+      color: #fff;
+      overflow: hidden;
+      font-family: 'Space Mono', monospace;
       cursor: none;
+      height: 100vh;
+      user-select: none;
     }
 
-    ::selection { background: #fff; color: #000; }
+    #canvas { position: fixed; inset: 0; z-index: 1; }
 
-    a { color: inherit; text-decoration: none; }
-
-    /* ─── Cursor ─── */
+    /* ─── Custom Cursor ─── */
     .cursor {
       position: fixed;
-      width: 14px;
-      height: 14px;
-      border: 1.5px solid rgba(255,255,255,0.6);
-      border-radius: 50%;
+      z-index: 1000;
       pointer-events: none;
-      z-index: 10000;
-      transition: transform 0.2s, border-color 0.2s, background 0.2s;
+      mix-blend-mode: difference;
     }
-    .cursor.active {
-      transform: scale(4);
-      background: rgba(255,255,255,0.08);
-      border-color: rgba(255,255,255,0.3);
-    }
-    .cursor.active::after {
-      content: 'View';
+    .cursor-dot {
+      width: 8px; height: 8px;
+      background: #fff;
+      border-radius: 50%;
       position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%,-50%);
-      font-size: 3px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.8);
+      top: -4px; left: -4px;
+    }
+    .cursor-ring {
+      width: 40px; height: 40px;
+      border: 1px solid rgba(255,255,255,0.4);
+      border-radius: 50%;
+      position: absolute;
+      top: -20px; left: -20px;
+      transition: transform 0.3s, border-color 0.3s;
+    }
+    .cursor.hovering .cursor-ring {
+      transform: scale(2);
+      border-color: rgba(255,255,255,0.8);
     }
 
-    /* ─── Header ─── */
-    header {
+    /* ─── Overlay UI ─── */
+    .ui-layer {
       position: fixed;
+      inset: 0;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    .ui-header {
+      position: absolute;
       top: 0; left: 0; right: 0;
-      z-index: 100;
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 2rem 3rem;
+      pointer-events: auto;
     }
 
     .logo {
-      font-family: var(--serif);
-      font-size: 1.3rem;
+      font-family: 'Instrument Serif', serif;
+      font-size: 1.4rem;
       font-style: italic;
-      letter-spacing: 0.02em;
+      opacity: 0.9;
+      cursor: none;
     }
 
-    .header-right {
+    .nav-links {
       display: flex;
-      align-items: center;
       gap: 2rem;
     }
-
-    .header-right a {
-      font-size: 0.75rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      opacity: 0.5;
-      transition: opacity 0.3s;
-    }
-    .header-right a:hover { opacity: 1; }
-
-    /* ─── Hero ─── */
-    .hero {
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .hero-bg {
-      position: absolute;
-      inset: 0;
-      z-index: 0;
-    }
-
-    .hero-bg img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      opacity: 0.35;
-      filter: grayscale(30%);
-      transform: scale(1.1);
-      animation: heroZoom 20s ease-in-out infinite alternate;
-    }
-
-    @keyframes heroZoom {
-      from { transform: scale(1.1); }
-      to { transform: scale(1.2); }
-    }
-
-    .hero-content {
-      position: relative;
-      z-index: 1;
-      text-align: center;
-    }
-
-    .hero-title {
-      font-family: var(--serif);
-      font-size: clamp(3.5rem, 10vw, 9rem);
-      font-weight: 400;
-      line-height: 0.95;
-      letter-spacing: -0.03em;
-    }
-
-    .hero-title em {
-      font-style: italic;
-      opacity: 0.7;
-    }
-
-    .hero-sub {
-      font-size: 0.8rem;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-top: 2rem;
-    }
-
-    .hero-scroll {
-      position: absolute;
-      bottom: 3rem;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    .hero-scroll span {
-      font-size: 0.6rem;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-
-    .scroll-line {
-      width: 1px;
-      height: 50px;
-      position: relative;
-      overflow: hidden;
-      background: var(--dim);
-    }
-
-    .scroll-line::after {
-      content: '';
-      position: absolute;
-      top: -100%;
-      width: 100%;
-      height: 100%;
-      background: #fff;
-      animation: scrollDown 2s ease-in-out infinite;
-    }
-
-    @keyframes scrollDown {
-      0% { top: -100%; }
-      100% { top: 100%; }
-    }
-
-    /* ─── Horizontal Scroll Gallery ─── */
-    .h-gallery-section {
-      padding: 8rem 0 4rem;
-    }
-
-    .section-header {
-      padding: 0 3rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      margin-bottom: 3rem;
-    }
-
-    .section-title {
-      font-family: var(--serif);
-      font-size: clamp(2rem, 4vw, 3.5rem);
-      font-weight: 400;
-    }
-
-    .section-title em { font-style: italic; }
-
-    .section-count {
-      font-family: var(--mono);
-      font-size: 0.7rem;
-      color: var(--muted);
-    }
-
-    .h-scroll-wrap {
-      overflow-x: auto;
-      overflow-y: hidden;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-      cursor: grab;
-    }
-    .h-scroll-wrap::-webkit-scrollbar { display: none; }
-    .h-scroll-wrap:active { cursor: grabbing; }
-
-    .h-scroll-track {
-      display: flex;
-      gap: 1.5rem;
-      padding: 0 3rem;
-      width: max-content;
-    }
-
-    .h-card {
-      flex-shrink: 0;
-      position: relative;
-      overflow: hidden;
-      border-radius: 0.5rem;
-    }
-
-    .h-card.tall { width: 320px; height: 480px; }
-    .h-card.wide { width: 520px; height: 380px; }
-    .h-card.square { width: 400px; height: 400px; }
-
-    .h-card img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1), filter 0.6s;
-      filter: grayscale(80%) brightness(0.9);
-    }
-
-    .h-card:hover img {
-      transform: scale(1.08);
-      filter: grayscale(0%) brightness(1);
-    }
-
-    .h-card-overlay {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      padding: 2rem 1.5rem;
-      background: linear-gradient(transparent, rgba(0,0,0,0.7));
-      opacity: 0;
-      transform: translateY(10px);
-      transition: all 0.5s;
-    }
-
-    .h-card:hover .h-card-overlay {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .h-card-title {
-      font-family: var(--serif);
-      font-size: 1.3rem;
-      font-style: italic;
-      margin-bottom: 0.25rem;
-    }
-
-    .h-card-meta {
-      font-family: var(--mono);
-      font-size: 0.65rem;
-      color: rgba(255,255,255,0.5);
-      letter-spacing: 0.05em;
-    }
-
-    /* ─── Full Bleed Featured ─── */
-    .featured {
-      padding: 8rem 3rem;
-    }
-
-    .featured-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      grid-template-rows: 500px 400px;
-      gap: 1.5rem;
-    }
-
-    .feat-item {
-      position: relative;
-      overflow: hidden;
-      border-radius: 0.5rem;
-    }
-
-    .feat-item:first-child {
-      grid-row: 1 / 3;
-    }
-
-    .feat-item img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1), filter 0.6s;
-      filter: grayscale(60%);
-    }
-
-    .feat-item:hover img {
-      transform: scale(1.05);
-      filter: grayscale(0%);
-    }
-
-    .feat-overlay {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      padding: 2.5rem;
-      background: linear-gradient(transparent 40%, rgba(0,0,0,0.6));
-      opacity: 0;
-      transition: opacity 0.5s;
-    }
-
-    .feat-item:hover .feat-overlay { opacity: 1; }
-
-    .feat-title {
-      font-family: var(--serif);
-      font-size: 1.8rem;
-      font-style: italic;
-    }
-
-    .feat-meta {
-      font-family: var(--mono);
-      font-size: 0.65rem;
-      color: rgba(255,255,255,0.5);
-      margin-top: 0.5rem;
-      letter-spacing: 0.05em;
-    }
-
-    /* ─── Cinematic Strip ─── */
-    .cine-section {
-      padding: 4rem 0 8rem;
-    }
-
-    .cine-strip {
-      display: flex;
-      gap: 0;
-      overflow: hidden;
-    }
-
-    .cine-frame {
-      flex: 1;
-      height: 65vh;
-      min-width: 0;
-      overflow: hidden;
-      position: relative;
-      transition: flex 0.7s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .cine-frame:hover { flex: 3; }
-
-    .cine-frame img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      filter: grayscale(100%);
-      transition: filter 0.7s;
-    }
-
-    .cine-frame:hover img { filter: grayscale(0%); }
-
-    .cine-label {
-      position: absolute;
-      bottom: 2rem;
-      left: 1.5rem;
-      font-family: var(--serif);
-      font-size: 1.2rem;
-      font-style: italic;
-      opacity: 0;
-      transform: translateY(10px);
-      transition: all 0.5s 0.2s;
-    }
-
-    .cine-frame:hover .cine-label {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    /* ─── Film Counter ─── */
-    .film-counter {
-      display: flex;
-      justify-content: center;
-      gap: 6rem;
-      padding: 5rem 3rem;
-      border-top: 1px solid rgba(255,255,255,0.06);
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-    }
-
-    .counter-item {
-      text-align: center;
-    }
-
-    .counter-num {
-      font-family: var(--serif);
-      font-size: 3rem;
-      font-style: italic;
-      line-height: 1;
-    }
-
-    .counter-label {
+    .nav-links a {
+      color: #fff;
+      text-decoration: none;
       font-size: 0.65rem;
       letter-spacing: 0.15em;
       text-transform: uppercase;
-      color: var(--muted);
-      margin-top: 0.75rem;
+      opacity: 0.4;
+      transition: opacity 0.3s;
+      cursor: none;
     }
+    .nav-links a:hover { opacity: 1; }
 
-    /* ─── About ─── */
-    .about {
-      padding: 8rem 3rem;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6rem;
+    /* ─── Photo Detail Panel ─── */
+    .detail-panel {
+      position: fixed;
+      right: -500px;
+      top: 0;
+      bottom: 0;
+      width: 400px;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(30px);
+      z-index: 50;
+      padding: 6rem 3rem 3rem;
+      transition: right 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: auto;
+      border-left: 1px solid rgba(255,255,255,0.06);
+    }
+    .detail-panel.open { right: 0; }
+
+    .detail-close {
+      position: absolute;
+      top: 2rem;
+      right: 2rem;
+      width: 40px; height: 40px;
+      background: none;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 50%;
+      color: #fff;
+      font-size: 1.2rem;
+      display: flex;
       align-items: center;
+      justify-content: center;
+      cursor: none;
+      transition: border-color 0.3s;
+    }
+    .detail-close:hover { border-color: rgba(255,255,255,0.5); }
+
+    .detail-number {
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.3);
+      margin-bottom: 2rem;
     }
 
-    .about-img {
-      aspect-ratio: 3/4;
-      border-radius: 0.5rem;
-      overflow: hidden;
+    .detail-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: 2.5rem;
+      font-style: italic;
+      font-weight: 400;
+      line-height: 1.2;
+      margin-bottom: 1.5rem;
     }
 
-    .about-img img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      filter: grayscale(40%);
-      transition: filter 0.6s;
+    .detail-meta {
+      font-size: 0.65rem;
+      letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.35);
+      line-height: 2.2;
+      margin-bottom: 2rem;
     }
 
-    .about-img:hover img { filter: grayscale(0%); }
+    .detail-desc {
+      font-family: 'Instrument Serif', serif;
+      font-size: 1.05rem;
+      line-height: 1.8;
+      color: rgba(255,255,255,0.6);
+      font-weight: 400;
+    }
 
-    .about-label {
+    .detail-nav {
+      position: absolute;
+      bottom: 3rem;
+      left: 3rem;
+      right: 3rem;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .detail-nav button {
+      background: none;
+      border: 1px solid rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.5);
+      padding: 0.6rem 1.5rem;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: none;
+      transition: all 0.3s;
+    }
+    .detail-nav button:hover {
+      border-color: rgba(255,255,255,0.4);
+      color: #fff;
+    }
+
+    /* ─── Hint ─── */
+    .hint {
+      position: fixed;
+      bottom: 3rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.25);
+      transition: opacity 0.5s;
+      pointer-events: none;
+    }
+
+    /* ─── Intro ─── */
+    .intro-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: #000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 1s, visibility 1s;
+    }
+    .intro-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .intro-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: clamp(3rem, 8vw, 7rem);
+      font-style: italic;
+      font-weight: 400;
+      opacity: 0;
+      transform: translateY(30px);
+      animation: introIn 1s 0.3s forwards;
+    }
+
+    .intro-sub {
+      font-size: 0.7rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.3);
+      margin-top: 1.5rem;
+      opacity: 0;
+      animation: introIn 1s 0.8s forwards;
+    }
+
+    .intro-enter {
+      margin-top: 4rem;
+      background: none;
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #fff;
+      padding: 1rem 3rem;
+      font-family: 'Space Mono', monospace;
       font-size: 0.65rem;
       letter-spacing: 0.2em;
       text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 2rem;
-    }
-
-    .about-text {
-      font-family: var(--serif);
-      font-size: clamp(1.5rem, 2.5vw, 2.2rem);
-      font-weight: 400;
-      line-height: 1.5;
-    }
-
-    .about-text em { font-style: italic; opacity: 0.7; }
-
-    .about-body {
-      font-size: 0.9rem;
-      line-height: 1.8;
-      color: var(--muted);
-      margin-top: 2rem;
-    }
-
-    .gear-list {
-      margin-top: 2.5rem;
-      font-family: var(--mono);
-      font-size: 0.7rem;
-      color: var(--dim);
-      line-height: 2.2;
-      letter-spacing: 0.02em;
-    }
-
-    .gear-list span { color: var(--muted); }
-
-    /* ─── Footer ─── */
-    .footer {
-      padding: 6rem 3rem 3rem;
-      border-top: 1px solid rgba(255,255,255,0.06);
-      text-align: center;
-    }
-
-    .footer-title {
-      font-family: var(--serif);
-      font-size: clamp(2.5rem, 6vw, 5rem);
-      font-weight: 400;
-      font-style: italic;
-      margin-bottom: 2rem;
-    }
-
-    .footer-links {
-      display: flex;
-      justify-content: center;
-      gap: 2.5rem;
-      margin-bottom: 4rem;
-    }
-
-    .footer-links a {
-      font-size: 0.75rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--muted);
-      transition: color 0.3s;
-    }
-    .footer-links a:hover { color: #fff; }
-
-    .footer-copy {
-      font-size: 0.65rem;
-      color: var(--dim);
-      letter-spacing: 0.05em;
-    }
-
-    /* ─── Scroll Reveal ─── */
-    .reveal {
+      cursor: none;
       opacity: 0;
-      transform: translateY(30px);
-      transition: opacity 0.8s, transform 0.8s;
+      animation: introIn 1s 1.2s forwards;
+      transition: background 0.3s, border-color 0.3s;
     }
-    .reveal.vis { opacity: 1; transform: none; }
+    .intro-enter:hover {
+      background: rgba(255,255,255,0.05);
+      border-color: rgba(255,255,255,0.5);
+    }
 
-    /* ─── Responsive ─── */
+    @keyframes introIn {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── View Modes ─── */
+    .view-modes {
+      position: fixed;
+      bottom: 3rem;
+      right: 3rem;
+      z-index: 20;
+      display: flex;
+      gap: 0.5rem;
+      pointer-events: auto;
+    }
+
+    .view-btn {
+      width: 36px; height: 36px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 50%;
+      color: rgba(255,255,255,0.4);
+      font-size: 0.7rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: none;
+      transition: all 0.3s;
+    }
+    .view-btn:hover, .view-btn.active {
+      border-color: rgba(255,255,255,0.4);
+      color: #fff;
+      background: rgba(255,255,255,0.08);
+    }
+
+    /* ─── Mobile ─── */
     @media (max-width: 768px) {
-      header { padding: 1.5rem; }
-      .header-right a:not(:last-child) { display: none; }
-      .hero-title { font-size: 3rem; }
-      .section-header { padding: 0 1.5rem; }
-      .h-scroll-track { padding: 0 1.5rem; }
-      .h-card.tall { width: 240px; height: 360px; }
-      .h-card.wide { width: 360px; height: 270px; }
-      .h-card.square { width: 280px; height: 280px; }
-      .featured { padding: 4rem 1.5rem; }
-      .featured-grid {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto;
-      }
-      .feat-item:first-child { grid-row: auto; }
-      .feat-item { height: 300px; }
-      .cine-strip { flex-direction: column; }
-      .cine-frame { height: 200px; flex: none; }
-      .cine-frame:hover { flex: none; }
-      .film-counter { gap: 2rem; padding: 3rem 1.5rem; }
-      .counter-num { font-size: 2rem; }
-      .about {
-        grid-template-columns: 1fr;
-        padding: 4rem 1.5rem;
-        gap: 3rem;
-      }
-      .footer { padding: 4rem 1.5rem 2rem; }
-      .footer-links { flex-wrap: wrap; gap: 1.5rem; }
+      .ui-header { padding: 1.5rem; }
+      .nav-links { display: none; }
       .cursor { display: none; }
       body { cursor: auto; }
+      .detail-panel { width: 100%; right: -100%; }
+      .view-modes { bottom: 1.5rem; right: 1.5rem; }
+      .hint { bottom: 1.5rem; }
+      .intro-enter { cursor: pointer; }
+      .detail-close, .detail-nav button { cursor: pointer; }
+      .nav-links a { cursor: pointer; }
     }
   </style>
 </head>
 <body>
 
-<div class="cursor" id="cursor"></div>
+<!-- Intro -->
+<div class="intro-overlay" id="intro">
+  <div class="intro-title">Through the Lens</div>
+  <div class="intro-sub">A Visual Journal by Wayne</div>
+  <button class="intro-enter" id="enterBtn">Enter Gallery</button>
+</div>
 
-<header>
-  <a href="#" class="logo">W.</a>
-  <div class="header-right">
-    <a href="#gallery">Gallery</a>
-    <a href="#about">About</a>
-    <a href="#contact">Contact</a>
-  </div>
-</header>
+<!-- Canvas -->
+<canvas id="canvas"></canvas>
 
-<!-- Hero -->
-<section class="hero">
-  <div class="hero-bg">
-    <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&h=900&fit=crop" alt="Landscape">
-  </div>
-  <div class="hero-content">
-    <h1 class="hero-title"><em>Through</em><br>the Lens</h1>
-    <p class="hero-sub">A Visual Journal by Wayne</p>
-  </div>
-  <div class="hero-scroll">
-    <span>Scroll</span>
-    <div class="scroll-line"></div>
-  </div>
-</section>
+<!-- Cursor -->
+<div class="cursor" id="cursor">
+  <div class="cursor-dot"></div>
+  <div class="cursor-ring"></div>
+</div>
 
-<!-- Horizontal Gallery -->
-<section class="h-gallery-section" id="gallery">
-  <div class="section-header reveal">
-    <h2 class="section-title"><em>Selected</em> Works</h2>
-    <span class="section-count">12 Photographs</span>
-  </div>
-  <div class="h-scroll-wrap" id="hscroll">
-    <div class="h-scroll-track">
-      <div class="h-card tall">
-        <img src="https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=640&h=960&fit=crop" alt="Mountain mist">
-        <div class="h-card-overlay">
-          <div class="h-card-title">Silent Peak</div>
-          <div class="h-card-meta">Yunnan, 2025 · Fujifilm X-T5</div>
-        </div>
-      </div>
-      <div class="h-card wide">
-        <img src="https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1040&h=760&fit=crop" alt="Forest light">
-        <div class="h-card-overlay">
-          <div class="h-card-title">First Light</div>
-          <div class="h-card-meta">Guizhou, 2025 · 35mm Film</div>
-        </div>
-      </div>
-      <div class="h-card square">
-        <img src="https://images.unsplash.com/photo-1518098268026-4e89f1a2cd8e?w=800&h=800&fit=crop" alt="Ocean">
-        <div class="h-card-overlay">
-          <div class="h-card-title">Tidal Memory</div>
-          <div class="h-card-meta">Fujian, 2024 · Fujifilm X-T5</div>
-        </div>
-      </div>
-      <div class="h-card tall">
-        <img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=640&h=960&fit=crop" alt="Lake reflection">
-        <div class="h-card-overlay">
-          <div class="h-card-title">Still Waters</div>
-          <div class="h-card-meta">Sichuan, 2024 · Fujifilm X-T5</div>
-        </div>
-      </div>
-      <div class="h-card wide">
-        <img src="https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=1040&h=760&fit=crop" alt="Grassland">
-        <div class="h-card-overlay">
-          <div class="h-card-title">Golden Hour</div>
-          <div class="h-card-meta">Inner Mongolia, 2024 · 35mm Film</div>
-        </div>
-      </div>
-      <div class="h-card square">
-        <img src="https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=800&h=800&fit=crop" alt="Waterfall">
-        <div class="h-card-overlay">
-          <div class="h-card-title">Gravity</div>
-          <div class="h-card-meta">Hunan, 2024 · Fujifilm X-T5</div>
-        </div>
-      </div>
-      <div class="h-card tall">
-        <img src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=640&h=960&fit=crop" alt="Sun rays">
-        <div class="h-card-overlay">
-          <div class="h-card-title">Between</div>
-          <div class="h-card-meta">Anhui, 2023 · 35mm Film</div>
-        </div>
-      </div>
+<!-- UI Overlay -->
+<div class="ui-layer">
+  <div class="ui-header">
+    <div class="logo">W.</div>
+    <div class="nav-links">
+      <a href="#" id="viewAll">Gallery</a>
+      <a href="mailto:wayne@example.com">Contact</a>
     </div>
-  </div>
-</section>
-
-<!-- Featured Grid -->
-<section class="featured reveal">
-  <div class="section-header" style="padding:0; margin-bottom:3rem;">
-    <h2 class="section-title"><em>Featured</em></h2>
-  </div>
-  <div class="featured-grid">
-    <div class="feat-item">
-      <img src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&h=1200&fit=crop" alt="Mountain dramatic">
-      <div class="feat-overlay">
-        <div class="feat-title">Altitude</div>
-        <div class="feat-meta">Tibet, 2025 · Series of 12</div>
-      </div>
-    </div>
-    <div class="feat-item">
-      <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&h=500&fit=crop" alt="Beach minimal">
-      <div class="feat-overlay">
-        <div class="feat-title">Shore Lines</div>
-        <div class="feat-meta">Hainan, 2024 · Series of 8</div>
-      </div>
-    </div>
-    <div class="feat-item">
-      <img src="https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=800&h=500&fit=crop" alt="Night sky">
-      <div class="feat-overlay">
-        <div class="feat-title">After Dark</div>
-        <div class="feat-meta">Qinghai, 2024 · Series of 6</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Cinematic Accordion -->
-<section class="cine-section">
-  <div class="section-header reveal" style="padding: 0 3rem; margin-bottom: 3rem;">
-    <h2 class="section-title"><em>Moments</em></h2>
-    <span class="section-count">Expand to explore</span>
-  </div>
-  <div class="cine-strip">
-    <div class="cine-frame">
-      <img src="https://images.unsplash.com/photo-1500534623283-312aade485b7?w=600&h=800&fit=crop" alt="">
-      <div class="cine-label">Fog</div>
-    </div>
-    <div class="cine-frame">
-      <img src="https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?w=600&h=800&fit=crop" alt="">
-      <div class="cine-label">Dawn</div>
-    </div>
-    <div class="cine-frame">
-      <img src="https://images.unsplash.com/photo-1446292532430-3e76f6ab6444?w=600&h=800&fit=crop" alt="">
-      <div class="cine-label">Solitude</div>
-    </div>
-    <div class="cine-frame">
-      <img src="https://images.unsplash.com/photo-1505765050516-f72dcac9c60e?w=600&h=800&fit=crop" alt="">
-      <div class="cine-label">Bloom</div>
-    </div>
-    <div class="cine-frame">
-      <img src="https://images.unsplash.com/photo-1439066615861-d1af74d74000?w=600&h=800&fit=crop" alt="">
-      <div class="cine-label">Reflect</div>
-    </div>
-  </div>
-</section>
-
-<!-- Film Counter -->
-<div class="film-counter reveal">
-  <div class="counter-item">
-    <div class="counter-num" data-target="238">0</div>
-    <div class="counter-label">Photographs</div>
-  </div>
-  <div class="counter-item">
-    <div class="counter-num" data-target="15">0</div>
-    <div class="counter-label">Series</div>
-  </div>
-  <div class="counter-item">
-    <div class="counter-num" data-target="23">0</div>
-    <div class="counter-label">Cities</div>
-  </div>
-  <div class="counter-item">
-    <div class="counter-num" data-target="4">0</div>
-    <div class="counter-label">Years</div>
   </div>
 </div>
 
-<!-- About -->
-<section class="about" id="about">
-  <div class="about-img reveal">
-    <img src="https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?w=600&h=800&fit=crop" alt="Photographer">
-  </div>
-  <div class="reveal">
-    <div class="about-label">About the Photographer</div>
-    <div class="about-text">
-      I chase <em>light</em> and <em>quiet moments</em> — the ones that exist between breaths, between places.
-    </div>
-    <p class="about-body">
-      Based in China. Shooting landscapes, architecture, and the spaces where nature meets human intention. 
-      I work with both digital and film, believing each has its own way of seeing.
-    </p>
-    <div class="gear-list">
-      <span>Primary</span> — Fujifilm X-T5 + 16-55mm f/2.8<br>
-      <span>Film</span> — Nikon FM2 + Portra 400<br>
-      <span>Travel</span> — Ricoh GR IIIx<br>
-      <span>Edit</span> — Lightroom + Capture One
-    </div>
-  </div>
-</section>
+<!-- View Modes -->
+<div class="view-modes">
+  <button class="view-btn active" id="modeOrbit" title="Orbit">◎</button>
+  <button class="view-btn" id="modeSpiral" title="Spiral">◌</button>
+  <button class="view-btn" id="modeWall" title="Wall">▦</button>
+</div>
 
-<!-- Footer -->
-<footer class="footer" id="contact">
-  <div class="footer-title reveal">Say hello</div>
-  <div class="footer-links reveal">
-    <a href="mailto:wayne@example.com">Email</a>
-    <a href="https://instagram.com/waynedddd" target="_blank">Instagram</a>
-    <a href="https://unsplash.com/@waynedddd" target="_blank">Unsplash</a>
-    <a href="https://github.com/waynedddd" target="_blank">GitHub</a>
+<!-- Hint -->
+<div class="hint" id="hint">Drag to orbit · Click photo to view · Scroll to zoom</div>
+
+<!-- Detail Panel -->
+<div class="detail-panel" id="detailPanel">
+  <button class="detail-close" id="detailClose">✕</button>
+  <div class="detail-number" id="detailNum">01 / 12</div>
+  <div class="detail-title" id="detailTitle">Silent Peak</div>
+  <div class="detail-meta" id="detailMeta">
+    Location — Yunnan, China<br>
+    Date — March 2025<br>
+    Camera — Fujifilm X-T5<br>
+    Lens — 16-55mm f/2.8
   </div>
-  <div class="footer-copy">© 2026 Wayne · All images shot by me unless noted</div>
-</footer>
+  <div class="detail-desc" id="detailDesc">
+    Morning mist clings to the mountain ridges like memory — 
+    half-visible, always dissolving.
+  </div>
+  <div class="detail-nav">
+    <button id="prevPhoto">← Prev</button>
+    <button id="nextPhoto">Next →</button>
+  </div>
+</div>
 
-<script>
-  // ─── Cursor ───
-  const cur = document.getElementById('cursor');
-  let cx = 0, cy = 0, mx = 0, my = 0;
-  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
-  (function loop() {
-    cx += (mx - cx) * 0.12;
-    cy += (my - cy) * 0.12;
-    cur.style.left = cx - 7 + 'px';
-    cur.style.top = cy - 7 + 'px';
-    requestAnimationFrame(loop);
-  })();
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.162.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.162.0/examples/jsm/"
+  }
+}
+</script>
 
-  document.querySelectorAll('.h-card, .feat-item, .cine-frame').forEach(el => {
-    el.addEventListener('mouseenter', () => cur.classList.add('active'));
-    el.addEventListener('mouseleave', () => cur.classList.remove('active'));
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// ─── Photo Data ───
+const photos = [
+  {
+    url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=1000&fit=crop',
+    title: 'Silent Peak',
+    location: 'Yunnan, China',
+    date: 'March 2025',
+    camera: 'Fujifilm X-T5',
+    lens: '16-55mm f/2.8',
+    desc: 'Morning mist clings to the mountain ridges like memory — half-visible, always dissolving.'
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=800&h=1000&fit=crop',
+    title: 'First Light',
+    location: 'Guizhou, China',
+    date: 'January 2025',
+    camera: 'Nikon FM2',
+    lens: '50mm f/1.4 · Portra 400',
+    desc: 'The valley catches the first sunlight before the village wakes.'
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&h=1000&fit=crop',
+    title: 'Altitude',
+    location: 'Tibet, China',
+    date: 'October 2024',
+    camera: 'Fujifilm X-T5',
+    lens: '10-24mm f/4',
+    desc: 'At 5,200 meters, the air thins and the sky deepens into something almost black.'
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&h=1000&fit=crop',
+    title: 'Canopy',
+    location: 'Sichuan, China',
+    date: 'September 2024',
+    camera: 'Ricoh GR IIIx',
+    lens: '40mm f/2.8',
+    desc: 'Light falls through the canopy in columns, turning the forest floor into a cathedral.'
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&h=1000&fit=crop',
+    title: 'Shore Lines',
+    location: 'Hainan, China',
+    date: 'August 2024',
+    camera: 'Fujifilm X-T5',
+    lens: '16-55mm f/2.8',
+    desc: 'The tide writes and rewrites the same story every six hours.'
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=800&h=1000&fit=crop',
+    title: 'After Dark',
+    location: 'Qinghai, China',
+    date: 'July 2024',
+    camera: 'Fujifilm X-T5',
+    lens: '10-24mm f/4 · 25s',
+    desc: 'You have to drive three hours from any city to see this many stars.'
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=800&h=1000&fit=crop',
+    title: 'Still Waters',
+    location: 'Jiuzhaigou, China',
+    date: 'June 2024',
+    camera: 'Nikon FM2',
+    lens: '28mm f/2.8 · Ektar 100',
+    desc: 'The lake holds the mountain so perfectly you forget which way is up.'
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=800&h=1000&fit=crop',
+    title: 'Golden Hour',
+    location: 'Inner Mongolia',
+    date: 'May 2024',
+    camera: 'Fujifilm X-T5',
+    lens: '56mm f/1.2',
+    desc: 'The grassland turns gold for exactly twenty minutes. Then it\'s gone.'
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1518098268026-4e89f1a2cd8e?w=800&h=1000&fit=crop',
+    title: 'Tidal Memory',
+    location: 'Fujian, China',
+    date: 'April 2024',
+    camera: 'Ricoh GR IIIx',
+    lens: '40mm f/2.8',
+    desc: 'Fishermen\'s poles stand like notation marks in an ocean-sized score.'
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1500534623283-312aade485b7?w=800&h=1000&fit=crop',
+    title: 'Fog',
+    location: 'Anhui, China',
+    date: 'March 2024',
+    camera: 'Fujifilm X-T5',
+    lens: '56mm f/1.2',
+    desc: 'Huangshan in fog is less a mountain and more a suggestion.'
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&h=1000&fit=crop',
+    title: 'Between',
+    location: 'Zhejiang, China',
+    date: 'February 2024',
+    camera: 'Nikon FM2',
+    lens: '50mm f/1.4 · Portra 160',
+    desc: 'Sun breaks through the ridge. For a second everything is backlit and borderless.'
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1446292532430-3e76f6ab6444?w=800&h=1000&fit=crop',
+    title: 'Solitude',
+    location: 'Xinjiang, China',
+    date: 'December 2023',
+    camera: 'Fujifilm X-T5',
+    lens: '10-24mm f/4',
+    desc: 'A single road cutting through nothing. The most honest landscape I\'ve ever seen.'
+  }
+];
+
+// ─── Scene Setup ───
+const canvas = document.getElementById('canvas');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x050505);
+scene.fog = new THREE.FogExp2(0x050505, 0.035);
+
+const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.1, 100);
+camera.position.set(0, 0, 14);
+
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.1;
+
+// Controls
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true;
+controls.dampingFactor = 0.05;
+controls.enablePan = false;
+controls.minDistance = 4;
+controls.maxDistance = 25;
+controls.autoRotate = true;
+controls.autoRotateSpeed = 0.3;
+controls.enabled = false;
+
+// ─── Lighting ───
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+scene.add(ambientLight);
+
+const pointLight = new THREE.PointLight(0xffffff, 15, 30);
+pointLight.position.set(0, 5, 8);
+scene.add(pointLight);
+
+const rimLight = new THREE.PointLight(0x4488ff, 5, 20);
+rimLight.position.set(-5, -3, -5);
+scene.add(rimLight);
+
+// ─── Particles ───
+const particleGeo = new THREE.BufferGeometry();
+const particleCount = 500;
+const pPositions = new Float32Array(particleCount * 3);
+for (let i = 0; i < particleCount * 3; i++) {
+  pPositions[i] = (Math.random() - 0.5) * 40;
+}
+particleGeo.setAttribute('position', new THREE.BufferAttribute(pPositions, 3));
+const particleMat = new THREE.PointsMaterial({
+  color: 0xffffff,
+  size: 0.02,
+  transparent: true,
+  opacity: 0.4,
+  sizeAttenuation: true
+});
+const particles = new THREE.Points(particleGeo, particleMat);
+scene.add(particles);
+
+// ─── Photo Planes ───
+const loader = new THREE.TextureLoader();
+const photoMeshes = [];
+const photoGroup = new THREE.Group();
+scene.add(photoGroup);
+
+const planeW = 2.2, planeH = 2.8;
+
+photos.forEach((photo, i) => {
+  const geo = new THREE.PlaneGeometry(planeW, planeH, 20, 20);
+  const mat = new THREE.MeshStandardMaterial({
+    color: 0x888888,
+    roughness: 0.3,
+    metalness: 0.1,
+    transparent: true,
+    opacity: 0,
+    side: THREE.DoubleSide
   });
 
-  // ─── Horizontal Drag Scroll ───
-  const hs = document.getElementById('hscroll');
-  let isDown = false, startX, scrollLeft;
-  hs.addEventListener('mousedown', e => {
-    isDown = true; startX = e.pageX - hs.offsetLeft; scrollLeft = hs.scrollLeft;
-  });
-  hs.addEventListener('mouseleave', () => isDown = false);
-  hs.addEventListener('mouseup', () => isDown = false);
-  hs.addEventListener('mousemove', e => {
-    if (!isDown) return;
-    e.preventDefault();
-    hs.scrollLeft = scrollLeft - (e.pageX - hs.offsetLeft - startX) * 1.5;
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.userData = { index: i, photo };
+
+  // Load texture
+  loader.load(photo.url, (tex) => {
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.minFilter = THREE.LinearMipmapLinearFilter;
+    mat.map = tex;
+    mat.color.set(0xffffff);
+    mat.needsUpdate = true;
   });
 
-  // ─── Scroll Reveal ───
-  const obs = new IntersectionObserver(entries => {
-    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('vis'); });
-  }, { threshold: 0.15 });
-  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+  photoGroup.add(mesh);
+  photoMeshes.push(mesh);
+});
 
-  // ─── Counter Animation ───
-  const counterObs = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (!entry.isIntersecting) return;
-      entry.target.querySelectorAll('[data-target]').forEach(el => {
-        const target = +el.dataset.target;
-        const dur = 2000;
-        const start = performance.now();
-        (function tick(now) {
-          const p = Math.min((now - start) / dur, 1);
-          const ease = 1 - Math.pow(1 - p, 3);
-          el.textContent = Math.round(target * ease);
-          if (p < 1) requestAnimationFrame(tick);
-        })(start);
-      });
-      counterObs.unobserve(entry.target);
+// ─── Layout Modes ───
+const layouts = {
+  orbit: (meshes) => {
+    const radius = 7;
+    meshes.forEach((m, i) => {
+      const angle = (i / meshes.length) * Math.PI * 2;
+      m.userData.targetPos = new THREE.Vector3(
+        Math.cos(angle) * radius,
+        (Math.random() - 0.5) * 2,
+        Math.sin(angle) * radius
+      );
+      m.userData.targetRot = new THREE.Euler(0, -angle + Math.PI, 0);
     });
-  }, { threshold: 0.5 });
-  document.querySelectorAll('.film-counter').forEach(el => counterObs.observe(el));
+  },
+  spiral: (meshes) => {
+    meshes.forEach((m, i) => {
+      const t = i / meshes.length;
+      const angle = t * Math.PI * 4;
+      const radius = 3 + t * 5;
+      const y = (t - 0.5) * 8;
+      m.userData.targetPos = new THREE.Vector3(
+        Math.cos(angle) * radius,
+        y,
+        Math.sin(angle) * radius
+      );
+      m.userData.targetRot = new THREE.Euler(0, -angle + Math.PI, (t - 0.5) * 0.3);
+    });
+  },
+  wall: (meshes) => {
+    const cols = 4;
+    const gapX = planeW + 0.4;
+    const gapY = planeH + 0.4;
+    const offsetX = ((cols - 1) * gapX) / 2;
+    meshes.forEach((m, i) => {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      m.userData.targetPos = new THREE.Vector3(
+        col * gapX - offsetX,
+        -row * gapY + gapY,
+        0
+      );
+      m.userData.targetRot = new THREE.Euler(0, 0, 0);
+    });
+  }
+};
+
+let currentLayout = 'orbit';
+
+function applyLayout(name) {
+  currentLayout = name;
+  layouts[name](photoMeshes);
+
+  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(
+    name === 'orbit' ? 'modeOrbit' : name === 'spiral' ? 'modeSpiral' : 'modeWall'
+  ).classList.add('active');
+
+  if (name === 'wall') {
+    controls.autoRotate = false;
+  } else {
+    controls.autoRotate = true;
+  }
+}
+
+// ─── Interaction ───
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+let hoveredMesh = null;
+let selectedIndex = -1;
+let isAnimatingToPhoto = false;
+
+canvas.addEventListener('mousemove', (e) => {
+  mouse.x = (e.clientX / innerWidth) * 2 - 1;
+  mouse.y = -(e.clientY / innerHeight) * 2 + 1;
+});
+
+canvas.addEventListener('click', () => {
+  if (hoveredMesh && !isAnimatingToPhoto) {
+    selectPhoto(hoveredMesh.userData.index);
+  }
+});
+
+function selectPhoto(index) {
+  selectedIndex = index;
+  const photo = photos[index];
+  const mesh = photoMeshes[index];
+
+  // Update detail panel
+  document.getElementById('detailNum').textContent =
+    `${String(index + 1).padStart(2, '0')} / ${photos.length}`;
+  document.getElementById('detailTitle').textContent = photo.title;
+  document.getElementById('detailMeta').innerHTML =
+    `Location — ${photo.location}<br>Date — ${photo.date}<br>Camera — ${photo.camera}<br>Lens — ${photo.lens}`;
+  document.getElementById('detailDesc').textContent = photo.desc;
+
+  document.getElementById('detailPanel').classList.add('open');
+
+  // Animate camera to face photo
+  isAnimatingToPhoto = true;
+  controls.autoRotate = false;
+
+  const targetPos = mesh.position.clone();
+  const dir = targetPos.clone().normalize();
+  const camTarget = targetPos.clone().sub(dir.multiplyScalar(3.5));
+
+  animateCamera(camTarget, targetPos, () => {
+    isAnimatingToPhoto = false;
+  });
+}
+
+function closeDetail() {
+  document.getElementById('detailPanel').classList.remove('open');
+  selectedIndex = -1;
+  if (currentLayout !== 'wall') controls.autoRotate = true;
+}
+
+function animateCamera(toPos, lookAt, onComplete) {
+  const startPos = camera.position.clone();
+  const startTarget = controls.target.clone();
+  const dur = 1200;
+  const start = performance.now();
+
+  function tick() {
+    const t = Math.min((performance.now() - start) / dur, 1);
+    const ease = 1 - Math.pow(1 - t, 3);
+
+    camera.position.lerpVectors(startPos, toPos, ease);
+    controls.target.lerpVectors(startTarget, lookAt, ease);
+    controls.update();
+
+    if (t < 1) requestAnimationFrame(tick);
+    else if (onComplete) onComplete();
+  }
+  tick();
+}
+
+// ─── Events ───
+document.getElementById('detailClose').addEventListener('click', closeDetail);
+
+document.getElementById('prevPhoto').addEventListener('click', () => {
+  const next = (selectedIndex - 1 + photos.length) % photos.length;
+  selectPhoto(next);
+});
+document.getElementById('nextPhoto').addEventListener('click', () => {
+  const next = (selectedIndex + 1) % photos.length;
+  selectPhoto(next);
+});
+
+document.getElementById('modeOrbit').addEventListener('click', () => applyLayout('orbit'));
+document.getElementById('modeSpiral').addEventListener('click', () => applyLayout('spiral'));
+document.getElementById('modeWall').addEventListener('click', () => applyLayout('wall'));
+
+document.getElementById('viewAll').addEventListener('click', (e) => {
+  e.preventDefault();
+  closeDetail();
+  camera.position.set(0, 0, 14);
+  controls.target.set(0, 0, 0);
+});
+
+// Keyboard
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeDetail();
+  if (e.key === 'ArrowRight' && selectedIndex >= 0) {
+    selectPhoto((selectedIndex + 1) % photos.length);
+  }
+  if (e.key === 'ArrowLeft' && selectedIndex >= 0) {
+    selectPhoto((selectedIndex - 1 + photos.length) % photos.length);
+  }
+  if (e.key === '1') applyLayout('orbit');
+  if (e.key === '2') applyLayout('spiral');
+  if (e.key === '3') applyLayout('wall');
+});
+
+// ─── Intro ───
+document.getElementById('enterBtn').addEventListener('click', () => {
+  document.getElementById('intro').classList.add('hidden');
+  controls.enabled = true;
+  // Fade photos in
+  photoMeshes.forEach((m, i) => {
+    setTimeout(() => {
+      const fadeIn = () => {
+        if (m.material.opacity < 1) {
+          m.material.opacity += 0.02;
+          requestAnimationFrame(fadeIn);
+        }
+      };
+      fadeIn();
+    }, i * 100);
+  });
+});
+
+// ─── Cursor ───
+const cursorEl = document.getElementById('cursor');
+let cxs = 0, cys = 0;
+document.addEventListener('mousemove', (e) => {
+  cxs = e.clientX;
+  cys = e.clientY;
+});
+
+// ─── Resize ───
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+// ─── Animation Loop ───
+applyLayout('orbit');
+
+function animate() {
+  requestAnimationFrame(animate);
+
+  // Cursor
+  cursorEl.style.left = cxs + 'px';
+  cursorEl.style.top = cys + 'px';
+
+  // Animate meshes to target positions
+  photoMeshes.forEach(m => {
+    if (m.userData.targetPos) {
+      m.position.lerp(m.userData.targetPos, 0.03);
+    }
+    if (m.userData.targetRot) {
+      m.rotation.x += (m.userData.targetRot.x - m.rotation.x) * 0.03;
+      m.rotation.y += (m.userData.targetRot.y - m.rotation.y) * 0.03;
+      m.rotation.z += (m.userData.targetRot.z - m.rotation.z) * 0.03;
+    }
+  });
+
+  // Hover detection
+  raycaster.setFromCamera(mouse, camera);
+  const hits = raycaster.intersectObjects(photoMeshes);
+
+  if (hits.length > 0) {
+    const hit = hits[0].object;
+    if (hoveredMesh !== hit) {
+      if (hoveredMesh) hoveredMesh.material.emissive?.set(0x000000);
+      hoveredMesh = hit;
+    }
+    cursorEl.classList.add('hovering');
+    // Subtle glow on hover
+    hit.material.emissive = new THREE.Color(0x111111);
+    hit.scale.lerp(new THREE.Vector3(1.05, 1.05, 1.05), 0.1);
+  } else {
+    if (hoveredMesh) {
+      hoveredMesh.material.emissive?.set(0x000000);
+      hoveredMesh = null;
+    }
+    cursorEl.classList.remove('hovering');
+  }
+
+  // Reset scale on non-hovered
+  photoMeshes.forEach(m => {
+    if (m !== hoveredMesh) {
+      m.scale.lerp(new THREE.Vector3(1, 1, 1), 0.1);
+    }
+  });
+
+  // Gentle particle rotation
+  particles.rotation.y += 0.0002;
+  particles.rotation.x += 0.0001;
+
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+animate();
+
+// Hide hint after a few seconds of interaction
+let interacted = false;
+canvas.addEventListener('pointerdown', () => {
+  if (!interacted) {
+    interacted = true;
+    setTimeout(() => {
+      document.getElementById('hint').style.opacity = '0';
+    }, 2000);
+  }
+});
 </script>
 
 </body>

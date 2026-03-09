@@ -88,12 +88,12 @@
     }
 
     .cover.orient-v {
-      width: 300px; height: 420px;
-      margin-left: -150px; margin-top: -230px;
+      width: 42vh; height: 60vh;
+      margin-left: -21vh; margin-top: -33vh;
     }
     .cover.orient-h {
-      width: 480px; height: 320px;
-      margin-left: -240px; margin-top: -180px;
+      width: 80vh; height: 53vh;
+      margin-left: -40vh; margin-top: -30vh;
     }
 
     .cover-img-wrap {
@@ -262,8 +262,8 @@
     @media (max-width: 768px) {
       header { padding: 1rem 1.5rem; }
       .header-links { display: none; }
-      .cover { width: 220px; height: 290px; margin-left: -110px; margin-top: -160px; }
-      .cover.orient-h { width: 340px; height: 226px; margin-left: -170px; margin-top: -130px; }
+      .cover.orient-v { width: 42vw; height: 60vh; margin-left: -21vw; margin-top: -33vh; }
+      .cover.orient-h { width: 65vw; height: 53vh; margin-left: -32.5vw; margin-top: -30vh; }
       .coverflow { height: 360px; }
       .info { padding: 0 1.5rem 2.5rem; }
       .info-desc { display: none; }
@@ -271,8 +271,8 @@
     }
 
     @media (max-width: 480px) {
-      .cover { width: 180px; height: 240px; margin-left: -90px; margin-top: -135px; }
-      .cover.orient-h { width: 280px; height: 186px; margin-left: -140px; margin-top: -108px; }
+      .cover.orient-v { width: 38vw; height: 55vh; margin-left: -19vw; margin-top: -30vh; }
+      .cover.orient-h { width: 58vw; height: 48vh; margin-left: -29vw; margin-top: -27vh; }
     }
 
     /* ─── Fade in ─── */
@@ -316,18 +316,18 @@
 
 <script>
 const photos = [
-  { url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=900&h=600&fit=crop', title: 'Silent Peak', meta: 'Yunnan, 2025 · Fujifilm X-T5', desc: 'Morning mist clings to the mountain ridges like memory.', orient: 'h' },
-  { url: 'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=600&h=800&fit=crop', title: 'First Light', meta: 'Guizhou, 2025 · Nikon FM2', desc: 'The valley catches the first sunlight before the village wakes.', orient: 'v' },
-  { url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=900&h=600&fit=crop', title: 'Altitude', meta: 'Tibet, 2024 · Fujifilm X-T5', desc: 'At 5,200 meters, the sky deepens into something almost black.', orient: 'h' },
-  { url: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=600&h=800&fit=crop', title: 'Canopy', meta: 'Sichuan, 2024 · Ricoh GR IIIx', desc: 'Light falls through the canopy in columns, like a cathedral.', orient: 'v' },
-  { url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=900&h=600&fit=crop', title: 'Shore Lines', meta: 'Hainan, 2024 · Fujifilm X-T5', desc: 'The tide writes and rewrites the same story every six hours.', orient: 'h' },
-  { url: 'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=900&h=600&fit=crop', title: 'After Dark', meta: 'Qinghai, 2024 · 25s exposure', desc: 'Drive three hours from any city to see this many stars.', orient: 'h' },
-  { url: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=600&h=800&fit=crop', title: 'Still Waters', meta: 'Jiuzhaigou, 2024 · Nikon FM2', desc: 'The lake holds the mountain so perfectly you forget which way is up.', orient: 'v' },
-  { url: 'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=900&h=600&fit=crop', title: 'Golden Hour', meta: 'Inner Mongolia, 2024 · Fujifilm X-T5', desc: 'The grassland turns gold for exactly twenty minutes.', orient: 'h' },
-  { url: 'https://images.unsplash.com/photo-1518098268026-4e89f1a2cd8e?w=600&h=800&fit=crop', title: 'Tidal Memory', meta: 'Fujian, 2024 · Ricoh GR IIIx', desc: "Fishermen's poles stand like notation in an ocean-sized score.", orient: 'v' },
-  { url: 'https://images.unsplash.com/photo-1500534623283-312aade485b7?w=900&h=600&fit=crop', title: 'Fog', meta: 'Anhui, 2024 · Fujifilm X-T5', desc: 'Huangshan in fog is less a mountain and more a suggestion.', orient: 'h' },
-  { url: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=600&h=800&fit=crop', title: 'Between', meta: 'Zhejiang, 2024 · Nikon FM2', desc: 'Sun breaks through. Everything is backlit and borderless.', orient: 'v' },
-  { url: 'https://images.unsplash.com/photo-1446292532430-3e76f6ab6444?w=900&h=600&fit=crop', title: 'Solitude', meta: 'Xinjiang, 2023 · Fujifilm X-T5', desc: 'A single road cutting through nothing. The most honest landscape.', orient: 'h' }
+  { url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1400w=900&h=600h=900&fit=crop', title: 'Silent Peak', meta: 'Yunnan, 2025 · Fujifilm X-T5', desc: 'Morning mist clings to the mountain ridges like memory.', orient: 'h' },
+  { url: 'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=900w=600&h=800h=1200&fit=crop', title: 'First Light', meta: 'Guizhou, 2025 · Nikon FM2', desc: 'The valley catches the first sunlight before the village wakes.', orient: 'v' },
+  { url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1400w=900&h=600h=900&fit=crop', title: 'Altitude', meta: 'Tibet, 2024 · Fujifilm X-T5', desc: 'At 5,200 meters, the sky deepens into something almost black.', orient: 'h' },
+  { url: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=900w=600&h=800h=1200&fit=crop', title: 'Canopy', meta: 'Sichuan, 2024 · Ricoh GR IIIx', desc: 'Light falls through the canopy in columns, like a cathedral.', orient: 'v' },
+  { url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1400w=900&h=600h=900&fit=crop', title: 'Shore Lines', meta: 'Hainan, 2024 · Fujifilm X-T5', desc: 'The tide writes and rewrites the same story every six hours.', orient: 'h' },
+  { url: 'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=1400w=900&h=600h=900&fit=crop', title: 'After Dark', meta: 'Qinghai, 2024 · 25s exposure', desc: 'Drive three hours from any city to see this many stars.', orient: 'h' },
+  { url: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=900w=600&h=800h=1200&fit=crop', title: 'Still Waters', meta: 'Jiuzhaigou, 2024 · Nikon FM2', desc: 'The lake holds the mountain so perfectly you forget which way is up.', orient: 'v' },
+  { url: 'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=1400w=900&h=600h=900&fit=crop', title: 'Golden Hour', meta: 'Inner Mongolia, 2024 · Fujifilm X-T5', desc: 'The grassland turns gold for exactly twenty minutes.', orient: 'h' },
+  { url: 'https://images.unsplash.com/photo-1518098268026-4e89f1a2cd8e?w=900w=600&h=800h=1200&fit=crop', title: 'Tidal Memory', meta: 'Fujian, 2024 · Ricoh GR IIIx', desc: "Fishermen's poles stand like notation in an ocean-sized score.", orient: 'v' },
+  { url: 'https://images.unsplash.com/photo-1500534623283-312aade485b7?w=1400w=900&h=600h=900&fit=crop', title: 'Fog', meta: 'Anhui, 2024 · Fujifilm X-T5', desc: 'Huangshan in fog is less a mountain and more a suggestion.', orient: 'h' },
+  { url: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=900w=600&h=800h=1200&fit=crop', title: 'Between', meta: 'Zhejiang, 2024 · Nikon FM2', desc: 'Sun breaks through. Everything is backlit and borderless.', orient: 'v' },
+  { url: 'https://images.unsplash.com/photo-1446292532430-3e76f6ab6444?w=1400w=900&h=600h=900&fit=crop', title: 'Solitude', meta: 'Xinjiang, 2023 · Fujifilm X-T5', desc: 'A single road cutting through nothing. The most honest landscape.', orient: 'h' }
 ];
 
 const container = document.getElementById('coverflow');

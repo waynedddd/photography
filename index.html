@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wayne — Photography</title>
+  <meta name="description" content="A visual journal by Wayne.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@300;400;500&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0a0a0a;
+      --fg: #fff;
+      --muted: #666;
+      --dim: #333;
+      --serif: 'Instrument Serif', Georgia, serif;
+      --sans: 'Space Grotesk', system-ui, sans-serif;
+      --mono: 'Space Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--fg);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    ::selection { background: #fff; color: #000; }
+
+    a { color: inherit; text-decoration: none; }
+
+    /* ─── Cursor ─── */
+    .cursor {
+      position: fixed;
+      width: 14px;
+      height: 14px;
+      border: 1.5px solid rgba(255,255,255,0.6);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 10000;
+      transition: transform 0.2s, border-color 0.2s, background 0.2s;
+    }
+    .cursor.active {
+      transform: scale(4);
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.3);
+    }
+    .cursor.active::after {
+      content: 'View';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      font-size: 3px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.8);
+    }
+
+    /* ─── Header ─── */
+    header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 2rem 3rem;
+    }
+
+    .logo {
+      font-family: var(--serif);
+      font-size: 1.3rem;
+      font-style: italic;
+      letter-spacing: 0.02em;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .header-right a {
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      opacity: 0.5;
+      transition: opacity 0.3s;
+    }
+    .header-right a:hover { opacity: 1; }
+
+    /* ─── Hero ─── */
+    .hero {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
+
+    .hero-bg img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.35;
+      filter: grayscale(30%);
+      transform: scale(1.1);
+      animation: heroZoom 20s ease-in-out infinite alternate;
+    }
+
+    @keyframes heroZoom {
+      from { transform: scale(1.1); }
+      to { transform: scale(1.2); }
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+    }
+
+    .hero-title {
+      font-family: var(--serif);
+      font-size: clamp(3.5rem, 10vw, 9rem);
+      font-weight: 400;
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+    }
+
+    .hero-title em {
+      font-style: italic;
+      opacity: 0.7;
+    }
+
+    .hero-sub {
+      font-size: 0.8rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 2rem;
+    }
+
+    .hero-scroll {
+      position: absolute;
+      bottom: 3rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .hero-scroll span {
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .scroll-line {
+      width: 1px;
+      height: 50px;
+      position: relative;
+      overflow: hidden;
+      background: var(--dim);
+    }
+
+    .scroll-line::after {
+      content: '';
+      position: absolute;
+      top: -100%;
+      width: 100%;
+      height: 100%;
+      background: #fff;
+      animation: scrollDown 2s ease-in-out infinite;
+    }
+
+    @keyframes scrollDown {
+      0% { top: -100%; }
+      100% { top: 100%; }
+    }
+
+    /* ─── Horizontal Scroll Gallery ─── */
+    .h-gallery-section {
+      padding: 8rem 0 4rem;
+    }
+
+    .section-header {
+      padding: 0 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 3rem;
+    }
+
+    .section-title {
+      font-family: var(--serif);
+      font-size: clamp(2rem, 4vw, 3.5rem);
+      font-weight: 400;
+    }
+
+    .section-title em { font-style: italic; }
+
+    .section-count {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+
+    .h-scroll-wrap {
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      cursor: grab;
+    }
+    .h-scroll-wrap::-webkit-scrollbar { display: none; }
+    .h-scroll-wrap:active { cursor: grabbing; }
+
+    .h-scroll-track {
+      display: flex;
+      gap: 1.5rem;
+      padding: 0 3rem;
+      width: max-content;
+    }
+
+    .h-card {
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+      border-radius: 0.5rem;
+    }
+
+    .h-card.tall { width: 320px; height: 480px; }
+    .h-card.wide { width: 520px; height: 380px; }
+    .h-card.square { width: 400px; height: 400px; }
+
+    .h-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1), filter 0.6s;
+      filter: grayscale(80%) brightness(0.9);
+    }
+
+    .h-card:hover img {
+      transform: scale(1.08);
+      filter: grayscale(0%) brightness(1);
+    }
+
+    .h-card-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 2rem 1.5rem;
+      background: linear-gradient(transparent, rgba(0,0,0,0.7));
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.5s;
+    }
+
+    .h-card:hover .h-card-overlay {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .h-card-title {
+      font-family: var(--serif);
+      font-size: 1.3rem;
+      font-style: italic;
+      margin-bottom: 0.25rem;
+    }
+
+    .h-card-meta {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: rgba(255,255,255,0.5);
+      letter-spacing: 0.05em;
+    }
+
+    /* ─── Full Bleed Featured ─── */
+    .featured {
+      padding: 8rem 3rem;
+    }
+
+    .featured-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 500px 400px;
+      gap: 1.5rem;
+    }
+
+    .feat-item {
+      position: relative;
+      overflow: hidden;
+      border-radius: 0.5rem;
+    }
+
+    .feat-item:first-child {
+      grid-row: 1 / 3;
+    }
+
+    .feat-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1), filter 0.6s;
+      filter: grayscale(60%);
+    }
+
+    .feat-item:hover img {
+      transform: scale(1.05);
+      filter: grayscale(0%);
+    }
+
+    .feat-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 2.5rem;
+      background: linear-gradient(transparent 40%, rgba(0,0,0,0.6));
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+
+    .feat-item:hover .feat-overlay { opacity: 1; }
+
+    .feat-title {
+      font-family: var(--serif);
+      font-size: 1.8rem;
+      font-style: italic;
+    }
+
+    .feat-meta {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: rgba(255,255,255,0.5);
+      margin-top: 0.5rem;
+      letter-spacing: 0.05em;
+    }
+
+    /* ─── Cinematic Strip ─── */
+    .cine-section {
+      padding: 4rem 0 8rem;
+    }
+
+    .cine-strip {
+      display: flex;
+      gap: 0;
+      overflow: hidden;
+    }
+
+    .cine-frame {
+      flex: 1;
+      height: 65vh;
+      min-width: 0;
+      overflow: hidden;
+      position: relative;
+      transition: flex 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .cine-frame:hover { flex: 3; }
+
+    .cine-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: grayscale(100%);
+      transition: filter 0.7s;
+    }
+
+    .cine-frame:hover img { filter: grayscale(0%); }
+
+    .cine-label {
+      position: absolute;
+      bottom: 2rem;
+      left: 1.5rem;
+      font-family: var(--serif);
+      font-size: 1.2rem;
+      font-style: italic;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.5s 0.2s;
+    }
+
+    .cine-frame:hover .cine-label {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ─── Film Counter ─── */
+    .film-counter {
+      display: flex;
+      justify-content: center;
+      gap: 6rem;
+      padding: 5rem 3rem;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .counter-item {
+      text-align: center;
+    }
+
+    .counter-num {
+      font-family: var(--serif);
+      font-size: 3rem;
+      font-style: italic;
+      line-height: 1;
+    }
+
+    .counter-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 0.75rem;
+    }
+
+    /* ─── About ─── */
+    .about {
+      padding: 8rem 3rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6rem;
+      align-items: center;
+    }
+
+    .about-img {
+      aspect-ratio: 3/4;
+      border-radius: 0.5rem;
+      overflow: hidden;
+    }
+
+    .about-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: grayscale(40%);
+      transition: filter 0.6s;
+    }
+
+    .about-img:hover img { filter: grayscale(0%); }
+
+    .about-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 2rem;
+    }
+
+    .about-text {
+      font-family: var(--serif);
+      font-size: clamp(1.5rem, 2.5vw, 2.2rem);
+      font-weight: 400;
+      line-height: 1.5;
+    }
+
+    .about-text em { font-style: italic; opacity: 0.7; }
+
+    .about-body {
+      font-size: 0.9rem;
+      line-height: 1.8;
+      color: var(--muted);
+      margin-top: 2rem;
+    }
+
+    .gear-list {
+      margin-top: 2.5rem;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--dim);
+      line-height: 2.2;
+      letter-spacing: 0.02em;
+    }
+
+    .gear-list span { color: var(--muted); }
+
+    /* ─── Footer ─── */
+    .footer {
+      padding: 6rem 3rem 3rem;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      text-align: center;
+    }
+
+    .footer-title {
+      font-family: var(--serif);
+      font-size: clamp(2.5rem, 6vw, 5rem);
+      font-weight: 400;
+      font-style: italic;
+      margin-bottom: 2rem;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 2.5rem;
+      margin-bottom: 4rem;
+    }
+
+    .footer-links a {
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      transition: color 0.3s;
+    }
+    .footer-links a:hover { color: #fff; }
+
+    .footer-copy {
+      font-size: 0.65rem;
+      color: var(--dim);
+      letter-spacing: 0.05em;
+    }
+
+    /* ─── Scroll Reveal ─── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.8s, transform 0.8s;
+    }
+    .reveal.vis { opacity: 1; transform: none; }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 768px) {
+      header { padding: 1.5rem; }
+      .header-right a:not(:last-child) { display: none; }
+      .hero-title { font-size: 3rem; }
+      .section-header { padding: 0 1.5rem; }
+      .h-scroll-track { padding: 0 1.5rem; }
+      .h-card.tall { width: 240px; height: 360px; }
+      .h-card.wide { width: 360px; height: 270px; }
+      .h-card.square { width: 280px; height: 280px; }
+      .featured { padding: 4rem 1.5rem; }
+      .featured-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+      }
+      .feat-item:first-child { grid-row: auto; }
+      .feat-item { height: 300px; }
+      .cine-strip { flex-direction: column; }
+      .cine-frame { height: 200px; flex: none; }
+      .cine-frame:hover { flex: none; }
+      .film-counter { gap: 2rem; padding: 3rem 1.5rem; }
+      .counter-num { font-size: 2rem; }
+      .about {
+        grid-template-columns: 1fr;
+        padding: 4rem 1.5rem;
+        gap: 3rem;
+      }
+      .footer { padding: 4rem 1.5rem 2rem; }
+      .footer-links { flex-wrap: wrap; gap: 1.5rem; }
+      .cursor { display: none; }
+      body { cursor: auto; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+
+<header>
+  <a href="#" class="logo">W.</a>
+  <div class="header-right">
+    <a href="#gallery">Gallery</a>
+    <a href="#about">About</a>
+    <a href="#contact">Contact</a>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-bg">
+    <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&h=900&fit=crop" alt="Landscape">
+  </div>
+  <div class="hero-content">
+    <h1 class="hero-title"><em>Through</em><br>the Lens</h1>
+    <p class="hero-sub">A Visual Journal by Wayne</p>
+  </div>
+  <div class="hero-scroll">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- Horizontal Gallery -->
+<section class="h-gallery-section" id="gallery">
+  <div class="section-header reveal">
+    <h2 class="section-title"><em>Selected</em> Works</h2>
+    <span class="section-count">12 Photographs</span>
+  </div>
+  <div class="h-scroll-wrap" id="hscroll">
+    <div class="h-scroll-track">
+      <div class="h-card tall">
+        <img src="https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=640&h=960&fit=crop" alt="Mountain mist">
+        <div class="h-card-overlay">
+          <div class="h-card-title">Silent Peak</div>
+          <div class="h-card-meta">Yunnan, 2025 · Fujifilm X-T5</div>
+        </div>
+      </div>
+      <div class="h-card wide">
+        <img src="https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1040&h=760&fit=crop" alt="Forest light">
+        <div class="h-card-overlay">
+          <div class="h-card-title">First Light</div>
+          <div class="h-card-meta">Guizhou, 2025 · 35mm Film</div>
+        </div>
+      </div>
+      <div class="h-card square">
+        <img src="https://images.unsplash.com/photo-1518098268026-4e89f1a2cd8e?w=800&h=800&fit=crop" alt="Ocean">
+        <div class="h-card-overlay">
+          <div class="h-card-title">Tidal Memory</div>
+          <div class="h-card-meta">Fujian, 2024 · Fujifilm X-T5</div>
+        </div>
+      </div>
+      <div class="h-card tall">
+        <img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=640&h=960&fit=crop" alt="Lake reflection">
+        <div class="h-card-overlay">
+          <div class="h-card-title">Still Waters</div>
+          <div class="h-card-meta">Sichuan, 2024 · Fujifilm X-T5</div>
+        </div>
+      </div>
+      <div class="h-card wide">
+        <img src="https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=1040&h=760&fit=crop" alt="Grassland">
+        <div class="h-card-overlay">
+          <div class="h-card-title">Golden Hour</div>
+          <div class="h-card-meta">Inner Mongolia, 2024 · 35mm Film</div>
+        </div>
+      </div>
+      <div class="h-card square">
+        <img src="https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=800&h=800&fit=crop" alt="Waterfall">
+        <div class="h-card-overlay">
+          <div class="h-card-title">Gravity</div>
+          <div class="h-card-meta">Hunan, 2024 · Fujifilm X-T5</div>
+        </div>
+      </div>
+      <div class="h-card tall">
+        <img src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=640&h=960&fit=crop" alt="Sun rays">
+        <div class="h-card-overlay">
+          <div class="h-card-title">Between</div>
+          <div class="h-card-meta">Anhui, 2023 · 35mm Film</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Featured Grid -->
+<section class="featured reveal">
+  <div class="section-header" style="padding:0; margin-bottom:3rem;">
+    <h2 class="section-title"><em>Featured</em></h2>
+  </div>
+  <div class="featured-grid">
+    <div class="feat-item">
+      <img src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&h=1200&fit=crop" alt="Mountain dramatic">
+      <div class="feat-overlay">
+        <div class="feat-title">Altitude</div>
+        <div class="feat-meta">Tibet, 2025 · Series of 12</div>
+      </div>
+    </div>
+    <div class="feat-item">
+      <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&h=500&fit=crop" alt="Beach minimal">
+      <div class="feat-overlay">
+        <div class="feat-title">Shore Lines</div>
+        <div class="feat-meta">Hainan, 2024 · Series of 8</div>
+      </div>
+    </div>
+    <div class="feat-item">
+      <img src="https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=800&h=500&fit=crop" alt="Night sky">
+      <div class="feat-overlay">
+        <div class="feat-title">After Dark</div>
+        <div class="feat-meta">Qinghai, 2024 · Series of 6</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Cinematic Accordion -->
+<section class="cine-section">
+  <div class="section-header reveal" style="padding: 0 3rem; margin-bottom: 3rem;">
+    <h2 class="section-title"><em>Moments</em></h2>
+    <span class="section-count">Expand to explore</span>
+  </div>
+  <div class="cine-strip">
+    <div class="cine-frame">
+      <img src="https://images.unsplash.com/photo-1500534623283-312aade485b7?w=600&h=800&fit=crop" alt="">
+      <div class="cine-label">Fog</div>
+    </div>
+    <div class="cine-frame">
+      <img src="https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?w=600&h=800&fit=crop" alt="">
+      <div class="cine-label">Dawn</div>
+    </div>
+    <div class="cine-frame">
+      <img src="https://images.unsplash.com/photo-1446292532430-3e76f6ab6444?w=600&h=800&fit=crop" alt="">
+      <div class="cine-label">Solitude</div>
+    </div>
+    <div class="cine-frame">
+      <img src="https://images.unsplash.com/photo-1505765050516-f72dcac9c60e?w=600&h=800&fit=crop" alt="">
+      <div class="cine-label">Bloom</div>
+    </div>
+    <div class="cine-frame">
+      <img src="https://images.unsplash.com/photo-1439066615861-d1af74d74000?w=600&h=800&fit=crop" alt="">
+      <div class="cine-label">Reflect</div>
+    </div>
+  </div>
+</section>
+
+<!-- Film Counter -->
+<div class="film-counter reveal">
+  <div class="counter-item">
+    <div class="counter-num" data-target="238">0</div>
+    <div class="counter-label">Photographs</div>
+  </div>
+  <div class="counter-item">
+    <div class="counter-num" data-target="15">0</div>
+    <div class="counter-label">Series</div>
+  </div>
+  <div class="counter-item">
+    <div class="counter-num" data-target="23">0</div>
+    <div class="counter-label">Cities</div>
+  </div>
+  <div class="counter-item">
+    <div class="counter-num" data-target="4">0</div>
+    <div class="counter-label">Years</div>
+  </div>
+</div>
+
+<!-- About -->
+<section class="about" id="about">
+  <div class="about-img reveal">
+    <img src="https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?w=600&h=800&fit=crop" alt="Photographer">
+  </div>
+  <div class="reveal">
+    <div class="about-label">About the Photographer</div>
+    <div class="about-text">
+      I chase <em>light</em> and <em>quiet moments</em> — the ones that exist between breaths, between places.
+    </div>
+    <p class="about-body">
+      Based in China. Shooting landscapes, architecture, and the spaces where nature meets human intention. 
+      I work with both digital and film, believing each has its own way of seeing.
+    </p>
+    <div class="gear-list">
+      <span>Primary</span> — Fujifilm X-T5 + 16-55mm f/2.8<br>
+      <span>Film</span> — Nikon FM2 + Portra 400<br>
+      <span>Travel</span> — Ricoh GR IIIx<br>
+      <span>Edit</span> — Lightroom + Capture One
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer" id="contact">
+  <div class="footer-title reveal">Say hello</div>
+  <div class="footer-links reveal">
+    <a href="mailto:wayne@example.com">Email</a>
+    <a href="https://instagram.com/waynedddd" target="_blank">Instagram</a>
+    <a href="https://unsplash.com/@waynedddd" target="_blank">Unsplash</a>
+    <a href="https://github.com/waynedddd" target="_blank">GitHub</a>
+  </div>
+  <div class="footer-copy">© 2026 Wayne · All images shot by me unless noted</div>
+</footer>
+
+<script>
+  // ─── Cursor ───
+  const cur = document.getElementById('cursor');
+  let cx = 0, cy = 0, mx = 0, my = 0;
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  (function loop() {
+    cx += (mx - cx) * 0.12;
+    cy += (my - cy) * 0.12;
+    cur.style.left = cx - 7 + 'px';
+    cur.style.top = cy - 7 + 'px';
+    requestAnimationFrame(loop);
+  })();
+
+  document.querySelectorAll('.h-card, .feat-item, .cine-frame').forEach(el => {
+    el.addEventListener('mouseenter', () => cur.classList.add('active'));
+    el.addEventListener('mouseleave', () => cur.classList.remove('active'));
+  });
+
+  // ─── Horizontal Drag Scroll ───
+  const hs = document.getElementById('hscroll');
+  let isDown = false, startX, scrollLeft;
+  hs.addEventListener('mousedown', e => {
+    isDown = true; startX = e.pageX - hs.offsetLeft; scrollLeft = hs.scrollLeft;
+  });
+  hs.addEventListener('mouseleave', () => isDown = false);
+  hs.addEventListener('mouseup', () => isDown = false);
+  hs.addEventListener('mousemove', e => {
+    if (!isDown) return;
+    e.preventDefault();
+    hs.scrollLeft = scrollLeft - (e.pageX - hs.offsetLeft - startX) * 1.5;
+  });
+
+  // ─── Scroll Reveal ───
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('vis'); });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+  // ─── Counter Animation ───
+  const counterObs = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      entry.target.querySelectorAll('[data-target]').forEach(el => {
+        const target = +el.dataset.target;
+        const dur = 2000;
+        const start = performance.now();
+        (function tick(now) {
+          const p = Math.min((now - start) / dur, 1);
+          const ease = 1 - Math.pow(1 - p, 3);
+          el.textContent = Math.round(target * ease);
+          if (p < 1) requestAnimationFrame(tick);
+        })(start);
+      });
+      counterObs.unobserve(entry.target);
+    });
+  }, { threshold: 0.5 });
+  document.querySelectorAll('.film-counter').forEach(el => counterObs.observe(el));
+</script>
+
+</body>
+</html>

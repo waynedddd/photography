@@ -82,9 +82,9 @@
       left: 50%;
       top: 50%;
       transform-style: preserve-3d;
-      transition: all 0.55s cubic-bezier(0.25, 1, 0.5, 1), filter 0.55s;
+      transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), filter 0.4s, opacity 0.4s, width 0.4s, height 0.4s, margin 0.4s;
       cursor: pointer;
-      will-change: transform, opacity, z-index;
+      will-change: transform, opacity, filter;
     }
 
     .cover.orient-v {
@@ -389,19 +389,21 @@ function layout() {
       cover.style.marginLeft = '';
       cover.style.marginTop = '';
     } else {
-      // Force all side cards to same size
-      cover.style.width = '280px';
-      cover.style.height = '380px';
-      cover.style.marginLeft = '-140px';
-      cover.style.marginTop = '-190px';
+      // Side cards: same height as center, fixed width
+      cover.style.height = '60vh';
+      cover.style.width = '220px';
+      cover.style.marginLeft = '-110px';
+      cover.style.marginTop = '-33vh';
+
+      const gap = window.innerWidth * 0.3;
 
       if (offset < 0) {
-        tx = -CENTER_GAP + (offset + 1) * SPACING;
+        tx = -gap + (offset + 1) * SPACING;
         ry = TILT;
         tz = 0;
         zi = total + offset;
       } else {
-        tx = CENTER_GAP + (offset - 1) * SPACING;
+        tx = gap + (offset - 1) * SPACING;
         ry = -TILT;
         tz = 0;
         zi = total - offset;
@@ -481,7 +483,7 @@ let wheelCd = false;
 document.addEventListener('wheel', e => {
   if (wheelCd) return;
   wheelCd = true;
-  setTimeout(() => wheelCd = false, 350);
+  setTimeout(() => wheelCd = false, 250);
   e.deltaY > 0 || e.deltaX > 0 ? goTo(current + 1) : goTo(current - 1);
 }, { passive: true });
 
@@ -511,6 +513,9 @@ document.addEventListener('mousemove', e => {
   goTo(Math.round(pct * (total - 1)));
 });
 document.addEventListener('mouseup', () => { dragging = false; });
+
+// Recalc on resize
+window.addEventListener('resize', () => layout());
 
 // ─── Init ───
 layout();

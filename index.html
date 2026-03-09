@@ -433,10 +433,21 @@ function layout() {
     } else {
       // Side cards: same height as center, fixed width
       const isMobile = window.innerWidth <= 768;
-      cover.style.height = isMobile ? '50vh' : '60vh';
-      cover.style.width = isMobile ? '120px' : '220px';
-      cover.style.marginLeft = isMobile ? '-60px' : '-110px';
-      cover.style.marginTop = isMobile ? '-28vh' : '-33vh';
+      const isSmall = window.innerWidth <= 480;
+      if (isMobile) {
+        // Match landscape photo height: width * 2/3
+        const landW = isSmall ? 90 : 85; // vw
+        const sideH = `calc(${landW}vw / 1.5)`;
+        cover.style.height = sideH;
+        cover.style.width = isSmall ? '100px' : '120px';
+        cover.style.marginLeft = isSmall ? '-50px' : '-60px';
+        cover.style.marginTop = `calc(-${landW}vw / 3)`;
+      } else {
+        cover.style.height = '60vh';
+        cover.style.width = '220px';
+        cover.style.marginLeft = '-110px';
+        cover.style.marginTop = '-33vh';
+      }
 
       const gap = window.innerWidth * (isMobile ? 0.42 : 0.3);
 

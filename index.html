@@ -117,6 +117,18 @@
       height: 100%;
       object-fit: cover;
       display: block;
+      transition: opacity 0.5s;
+    }
+
+    /* Glass mode for side cards */
+    .cover-img-wrap.glass {
+      background: rgba(255,255,255,0.035);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .cover-img-wrap.glass img {
+      opacity: 0;
     }
 
     /* ─── Reflection ─── */
@@ -357,51 +369,55 @@ const covers = document.querySelectorAll('.cover');
 // Center cover: face-on, z-index high
 // Left covers: rotateY(+55deg), shifted left, stacked
 // Right covers: rotateY(-55deg), shifted right, stacked
-const TILT = 72;          // degrees (very tilted = narrow profile on sides)
-const SPACING = 35;       // px between stacked covers
-const CENTER_GAP = 480;   // px gap from center to first tilted
-const Z_STEP = 80;        // z offset per step (push much further back)
+const TILT = 75;          // degrees
+const SPACING = 28;       // px between stacked covers (tight stack)
+const CENTER_GAP = 520;   // px gap — push sides to page edges
+const Z_STEP = 40;        // z offset per step
 
 function layout() {
   covers.forEach((cover, i) => {
     const offset = i - current;
-    let tx, ry, tz, op, zi;
+    let tx, ry, tz, zi;
+    const absOff = Math.abs(offset);
 
     if (offset === 0) {
-      // Center
-      tx = 0;
-      ry = 0;
-      tz = 0;
-      op = 1;
+      tx = 0; ry = 0; tz = 0;
       zi = total;
     } else if (offset < 0) {
-      // Left side
       tx = -CENTER_GAP + offset * SPACING;
       ry = TILT;
-      tz = -Math.abs(offset) * Z_STEP;
-      op = 1;
+      tz = -absOff * Z_STEP;
       zi = total + offset;
     } else {
-      // Right side
       tx = CENTER_GAP + (offset - 1) * SPACING;
       ry = -TILT;
-      tz = -offset * Z_STEP;
-      op = 1;
+      tz = -absOff * Z_STEP;
       zi = total - offset;
     }
 
     cover.style.transform = `translateX(${tx}px) translateZ(${tz}px) rotateY(${ry}deg)`;
     cover.style.zIndex = zi;
 
-    // Only show a few covers on each side, hide the rest
-    const absOff = Math.abs(offset);
-    if (absOff > 3) {
-      cover.style.opacity = 0;
-      cover.style.filter = 'brightness(0)';
+    // Show up to 6 on each side
+    if (absOff > 6) {
+      cover.style.opacity = '0';
     } else {
-      cover.style.opacity = 1;
-      cover.style.filter = offset === 0 ? 'brightness(1)' : `brightness(${Math.max(0.1, 0.3 - absOff * 0.08)})`;
+      cover.style.opacity = '1';
     }
+
+    // Toggle glass mode for non-center cards
+    const imgWrap = cover.querySelector('.cover-img-wrap');
+    const reflection = cover.querySelector('.cover-reflection');
+    if (offset === 0) {
+      imgWrap.classList.remove('glass');
+      if (reflection) reflection.style.display = '';
+      cover.style.filter = 'brightness(1)';
+    } else {
+      imgWrap.classList.add('glass');
+      if (reflection) reflection.style.display = 'none';
+      cover.style.filter = 'brightness(1)';
+    }
+
     cover.classList.toggle('active', offset === 0);
   });
 

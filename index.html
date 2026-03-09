@@ -122,12 +122,13 @@
 
     /* Glass mode for side cards */
     .cover-img-wrap.glass {
-      background: rgba(0,0,0,0.5);
-      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.03);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.05);
     }
     .cover-img-wrap.glass img {
-      opacity: 0.35;
-      filter: blur(8px) brightness(0.5);
+      opacity: 0;
     }
 
     /* ─── Reflection ─── */

@@ -383,16 +383,29 @@ function layout() {
     if (offset === 0) {
       tx = 0; ry = 0; tz = 0;
       zi = total;
-    } else if (offset < 0) {
-      tx = -CENTER_GAP + offset * SPACING;
-      ry = TILT;
-      tz = -absOff * Z_STEP;
-      zi = total + offset;
+      // Restore original orientation class
+      cover.style.width = '';
+      cover.style.height = '';
+      cover.style.marginLeft = '';
+      cover.style.marginTop = '';
     } else {
-      tx = CENTER_GAP + (offset - 1) * SPACING;
-      ry = -TILT;
-      tz = -absOff * Z_STEP;
-      zi = total - offset;
+      // Force all side cards to same size
+      cover.style.width = '280px';
+      cover.style.height = '380px';
+      cover.style.marginLeft = '-140px';
+      cover.style.marginTop = '-190px';
+
+      if (offset < 0) {
+        tx = -CENTER_GAP + (offset + 1) * SPACING;
+        ry = TILT;
+        tz = 0;
+        zi = total + offset;
+      } else {
+        tx = CENTER_GAP + (offset - 1) * SPACING;
+        ry = -TILT;
+        tz = 0;
+        zi = total - offset;
+      }
     }
 
     cover.style.transform = `translateX(${tx}px) translateZ(${tz}px) rotateY(${ry}deg)`;

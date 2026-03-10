@@ -351,9 +351,8 @@
 
     /* Filtered-out photos */
     .photo.dimmed {
-      opacity: 0.08 !important;
+      opacity: 0 !important;
       pointer-events: none;
-      filter: grayscale(1);
     }
 
     .photo.piled {
@@ -829,18 +828,33 @@ function applyFilter() {
   let matchCount = 0;
   let pileIdx = 0;
 
+  // First pass: count matches
+  photoEls.forEach(el => {
+    if (matchesFilter(getPhotoForEl(el))) matchCount++;
+  });
+
+  // Arrange in a loose grid centered on viewport
+  const pileCols = Math.min(Math.ceil(Math.sqrt(matchCount * 1.3)), 6);
+  const pileSpacing = isMobile ? 140 : 200;
+  const pileW = pileCols * pileSpacing;
+  const pileRows = Math.ceil(matchCount / pileCols);
+  const pileH = pileRows * pileSpacing;
+  const startX = cx - pileW / 2;
+  const startY = cy - pileH / 2;
+
+  pileIdx = 0;
   photoEls.forEach(el => {
     el.classList.add('piled');
     const photo = getPhotoForEl(el);
     const matches = matchesFilter(photo);
 
     if (matches) {
-      matchCount++;
       el.classList.remove('dimmed');
-      // Stack with small random offsets
-      const stackX = cx - 120 + (rand() - 0.5) * 40;
-      const stackY = cy - 100 + (rand() - 0.5) * 40;
-      const stackRot = (rand() - 0.5) * 16;
+      const col = pileIdx % pileCols;
+      const row = Math.floor(pileIdx / pileCols);
+      const stackX = startX + col * pileSpacing + (rand() - 0.5) * 30;
+      const stackY = startY + row * pileSpacing + (rand() - 0.5) * 30;
+      const stackRot = (rand() - 0.5) * 10;
       el.style.left = stackX + 'px';
       el.style.top = stackY + 'px';
       el.style.transform = `rotate(${stackRot}deg)`;

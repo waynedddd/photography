@@ -535,7 +535,7 @@
 
 <div id="lightbox">
   <div id="lb-backdrop" onclick="closeLightbox()"></div>
-  <div id="lb-card" onclick="toggleFlip(event)">
+  <div id="lb-card">
     <div id="lb-card-inner">
       <div id="lb-front">
         <img id="lb-img" src="" alt="">
@@ -548,7 +548,7 @@
       </div>
     </div>
   </div>
-  <div class="info" onclick="closeLightbox()">
+  <div class="info">
     <div class="title" id="lb-title"></div>
     <div class="meta" id="lb-meta"></div>
     <div class="desc" id="lb-desc"></div>
@@ -826,11 +826,22 @@ function openLightbox(idx) {
 }
 
 function toggleFlip(e) {
-  e.stopPropagation();
+  if (e) e.stopPropagation();
   const card = document.getElementById('lb-card');
   if (card.classList.contains('no-note')) return;
   card.classList.toggle('flipped');
 }
+
+// Desktop: click card to flip
+document.getElementById('lb-card').addEventListener('click', (e) => {
+  e.stopPropagation();
+  toggleFlip(e);
+});
+
+// Desktop: click info area to close
+document.querySelector('#lightbox .info').addEventListener('click', (e) => {
+  closeLightbox();
+});
 
 // Card touch: tap = flip, swipe = navigate
 let cardTouchX = 0, cardTouchMoved = false;
@@ -878,13 +889,14 @@ lbEl.addEventListener('touchstart', (e) => {
   lbTouchY = e.touches[0].clientY;
 }, { passive: true });
 lbEl.addEventListener('touchend', (e) => {
-  // Don't close/swipe if tapping on the card (flip) or info
-  if (e.target.closest('#lb-card') || e.target.closest('.info')) return;
+  // Tap on card is handled by card's own touch handler (flip)
+  if (e.target.closest('#lb-card')) return;
   const dx = e.changedTouches[0].clientX - lbTouchX;
   if (Math.abs(dx) > 50) {
     if (dx < 0) openLightbox((currentLB + 1) % photos.length);
     else openLightbox((currentLB - 1 + photos.length) % photos.length);
   } else if (Math.abs(dx) < 10) {
+    // Tap on backdrop or info → close
     closeLightbox();
   }
 });

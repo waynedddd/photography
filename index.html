@@ -422,42 +422,26 @@ const sections = [
   { title: 'Journeys', sub: 'Elsewhere · 2024', photos: photos.filter(p => ['2024-02','2024-03','2024-10'].includes(p.date)) },
 ];
 
-// --- Build pages ---
-const zine = document.getElementById('zine');
-const pages = [];
+// --- Build page data (no DOM yet) ---
+const pageData = []; // array of { html, layoutClass }
 
-// Cover
-function addPage(html, extraClass = '') {
-  const div = document.createElement('div');
-  div.className = 'page ' + extraClass;
-  div.innerHTML = html;
-  zine.appendChild(div);
-  pages.push(div);
+function addPageData(html, layoutClass) {
+  pageData.push({ html, layoutClass });
 }
 
-addPage(`
+addPageData(`
   <div class="cover-title">Wayne</div>
   <div class="cover-sub">Photography · 2024 — 2025</div>
   <div class="cover-hint">→ swipe or press arrow keys</div>
 `, 'layout-cover');
 
-// Layout assignment patterns
 const layoutPatterns = ['bleed', 'white', 'bleed', 'portrait', 'duo', 'white', 'bleed'];
 let patIdx = 0;
-
-function nextLayout(photo, photo2) {
-  if (photo.orient === 'v') return 'portrait';
-  if (photo2) return 'duo';
-  const l = layoutPatterns[patIdx % layoutPatterns.length];
-  patIdx++;
-  return l;
-}
 
 sections.forEach(sec => {
   if (sec.photos.length === 0) return;
 
-  // Section divider
-  addPage(`
+  addPageData(`
     <div class="big">${sec.title}</div>
     <div class="sub">${sec.sub}</div>
   `, 'layout-text');
@@ -467,10 +451,9 @@ sections.forEach(sec => {
     const p = sec.photos[i];
     const p2 = sec.photos[i + 1];
 
-    // Portrait photos get their own page
     if (p.orient === 'v') {
-      addPage(`
-        <img src="${p.url}" alt="${p.title}" loading="lazy">
+      addPageData(`
+        <img src="${p.url}" alt="${p.title}">
         <div class="side">
           <div class="title">${p.title}</div>
           <div class="desc">${p.desc}</div>
@@ -481,22 +464,15 @@ sections.forEach(sec => {
       continue;
     }
 
-    // Try duo if next is also horizontal
     if (p2 && p2.orient === 'h' && patIdx % 3 === 0) {
-      addPage(`
+      addPageData(`
         <div class="duo-item">
-          <img src="${p.url}" alt="${p.title}" loading="lazy">
-          <div class="caption">
-            <div class="title">${p.title}</div>
-            <div class="meta">${p.meta}</div>
-          </div>
+          <img src="${p.url}" alt="${p.title}">
+          <div class="caption"><div class="title">${p.title}</div><div class="meta">${p.meta}</div></div>
         </div>
         <div class="duo-item">
-          <img src="${p2.url}" alt="${p2.title}" loading="lazy">
-          <div class="caption">
-            <div class="title">${p2.title}</div>
-            <div class="meta">${p2.meta}</div>
-          </div>
+          <img src="${p2.url}" alt="${p2.title}">
+          <div class="caption"><div class="title">${p2.title}</div><div class="meta">${p2.meta}</div></div>
         </div>
       `, 'layout-duo');
       patIdx++;
@@ -504,53 +480,65 @@ sections.forEach(sec => {
       continue;
     }
 
-    // Alternate between bleed and white
     const layout = layoutPatterns[patIdx % layoutPatterns.length];
     patIdx++;
 
     if (layout === 'bleed') {
-      addPage(`
-        <img src="${p.url}" alt="${p.title}" loading="lazy">
-        <div class="overlay">
-          <div class="title">${p.title}</div>
-          <div class="meta">${p.meta}</div>
-        </div>
+      addPageData(`
+        <img src="${p.url}" alt="${p.title}">
+        <div class="overlay"><div class="title">${p.title}</div><div class="meta">${p.meta}</div></div>
       `, 'layout-bleed');
     } else {
-      addPage(`
-        <img src="${p.url}" alt="${p.title}" loading="lazy">
-        <div class="text">
-          <div class="title">${p.title}</div>
-          <div class="desc">${p.desc}</div>
-          <div class="meta">${p.meta}</div>
-        </div>
+      addPageData(`
+        <img src="${p.url}" alt="${p.title}">
+        <div class="text"><div class="title">${p.title}</div><div class="desc">${p.desc}</div><div class="meta">${p.meta}</div></div>
       `, 'layout-white');
     }
     i++;
   }
 });
 
-// Back cover
-addPage(`
+addPageData(`
   <div class="cover-title">Fin.</div>
   <div class="cover-sub">${photos.length} photographs · Wayne</div>
 `, 'layout-cover');
 
-// --- Navigation ---
-let current = 0;
-const total = pages.length;
+// --- Virtual rendering: only 3 DOM nodes ---
+const zine = document.getElementById('zine');
+const slots = [0, 1, 2].map(() => {
+  const div = document.createElement('div');
+  div.className = 'page';
+  zine.appendChild(div);
+  return div;
+});
 
-function showPage(idx, direction) {
-  pages.forEach((p, i) => {
-    p.classList.remove('active', 'prev');
-    if (i === idx) {
-      p.classList.add('active');
-    } else if (direction > 0 && i === idx - 1) {
-      p.classList.add('prev');
-    } else if (direction < 0 && i === idx + 1) {
-      // going backward: old page exits to right (default)
-    }
-  });
+let current = 0;
+const total = pageData.length;
+
+function renderSlot(slot, idx) {
+  if (idx < 0 || idx >= total) {
+    slot.className = 'page';
+    slot.innerHTML = '';
+    slot.style.visibility = 'hidden';
+    return;
+  }
+  const d = pageData[idx];
+  slot.className = 'page ' + d.layoutClass;
+  slot.innerHTML = d.html;
+  slot.style.visibility = 'visible';
+}
+
+function showPage(idx, dir) {
+  current = idx;
+  // slot 0 = prev, 1 = current, 2 = next
+  renderSlot(slots[0], idx - 1);
+  renderSlot(slots[1], idx);
+  renderSlot(slots[2], idx + 1);
+
+  slots[0].classList.add('prev');
+  slots[1].classList.add('active');
+  slots[2].classList.remove('active', 'prev');
+
   document.getElementById('counter').textContent = `${idx + 1} / ${total}`;
   document.getElementById('progress').style.width = ((idx + 1) / total * 100) + '%';
 }
@@ -558,11 +546,9 @@ function showPage(idx, direction) {
 function go(dir) {
   const next = current + dir;
   if (next < 0 || next >= total) return;
-  current = next;
-  showPage(current, dir);
+  showPage(next, dir);
 }
 
-// Init
 showPage(0, 1);
 
 // Keyboard

@@ -369,10 +369,10 @@ const photos = [
 ];
 
 // --- Layout: scatter photos on a large canvas ---
-const PHOTO_W_H = 260;  // horizontal photo width
-const PHOTO_W_V = 180;  // vertical photo width
-const COLS = Math.ceil(Math.sqrt(photos.length * 1.5));
-const CELL = 360;
+const PHOTO_W_H = 240;  // horizontal photo width
+const PHOTO_W_V = 170;  // vertical photo width
+const COLS = Math.ceil(Math.sqrt(photos.length * 1.8));
+const CELL = 200;  // tight grid = heavy overlap
 const CANVAS_W = COLS * CELL + 400;
 const CANVAS_H = Math.ceil(photos.length / COLS) * CELL + 400;
 const canvas = document.getElementById('canvas');
@@ -396,9 +396,9 @@ shuffled.forEach((p, i) => {
   const col = i % COLS;
   const row = Math.floor(i / COLS);
   const w = p.orient === 'v' ? PHOTO_W_V : PHOTO_W_H;
-  const rotation = (rand() - 0.5) * 24; // ±12°
-  const offsetX = (rand() - 0.5) * 80;
-  const offsetY = (rand() - 0.5) * 80;
+  const rotation = (rand() - 0.5) * 30; // ±15°
+  const offsetX = (rand() - 0.5) * 140;
+  const offsetY = (rand() - 0.5) * 140;
   const x = 200 + col * CELL + offsetX;
   const y = 200 + row * CELL + offsetY;
   const z = Math.floor(rand() * 100);
@@ -426,13 +426,17 @@ shuffled.forEach((p, i) => {
   });
 
   // Bring to front on hover
+  let hoverZ = 9000;
   el.addEventListener('mouseenter', () => {
-    el.style.zIndex = 9000;
-    el.style.transform = `rotate(0deg) scale(1.08)`;
+    hoverZ++;
+    el.style.zIndex = hoverZ;
+    el.style.transform = `rotate(0deg) scale(1.15) translateY(-8px)`;
+    el.style.boxShadow = '0 20px 60px rgba(0,0,0,0.6), 0 0 1px rgba(0,0,0,0.2)';
   });
   el.addEventListener('mouseleave', () => {
-    el.style.zIndex = z;
+    el.style.zIndex = hoverZ; // stays on top once touched
     el.style.transform = `rotate(${rotation}deg)`;
+    el.style.boxShadow = '';
   });
 
   canvas.appendChild(el);

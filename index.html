@@ -832,7 +832,7 @@ function toggleFlip(e) {
   card.classList.toggle('flipped');
 }
 
-// Desktop: click card to flip
+// Click card to flip (works on both desktop and mobile)
 document.getElementById('lb-card').addEventListener('click', (e) => {
   e.stopPropagation();
   toggleFlip(e);
@@ -843,23 +843,20 @@ document.querySelector('#lightbox .info').addEventListener('click', (e) => {
   closeLightbox();
 });
 
-// Card touch: tap = flip, swipe = navigate
-let cardTouchX = 0, cardTouchMoved = false;
+// Card swipe to navigate (mobile)
+let cardTouchX = 0;
 const cardEl = document.getElementById('lb-card');
 cardEl.addEventListener('touchstart', (e) => {
   cardTouchX = e.touches[0].clientX;
-  cardTouchMoved = false;
 }, { passive: true });
 cardEl.addEventListener('touchend', (e) => {
   const dx = e.changedTouches[0].clientX - cardTouchX;
   if (Math.abs(dx) > 50) {
-    // Swipe to navigate
+    e.preventDefault(); // prevent click from firing
     if (dx < 0) openLightbox((currentLB + 1) % photos.length);
     else openLightbox((currentLB - 1 + photos.length) % photos.length);
-  } else if (Math.abs(dx) < 10) {
-    // Tap to flip
-    toggleFlip(e);
   }
+  // tap (small dx) → let click event handle flip
 });
 
 function closeLightbox() {

@@ -372,7 +372,7 @@ const photos = [
 const PHOTO_W_H = 240;  // horizontal photo width
 const PHOTO_W_V = 170;  // vertical photo width
 const COLS = Math.ceil(Math.sqrt(photos.length * 1.8));
-const CELL = 200;  // tight grid = heavy overlap
+const CELL = 260;  // moderate overlap
 const CANVAS_W = COLS * CELL + 400;
 const CANVAS_H = Math.ceil(photos.length / COLS) * CELL + 400;
 const canvas = document.getElementById('canvas');
@@ -396,9 +396,9 @@ shuffled.forEach((p, i) => {
   const col = i % COLS;
   const row = Math.floor(i / COLS);
   const w = p.orient === 'v' ? PHOTO_W_V : PHOTO_W_H;
-  const rotation = (rand() - 0.5) * 30; // ±15°
-  const offsetX = (rand() - 0.5) * 140;
-  const offsetY = (rand() - 0.5) * 140;
+  const rotation = (rand() - 0.5) * 12; // ±6° subtle
+  const offsetX = (rand() - 0.5) * 60;
+  const offsetY = (rand() - 0.5) * 60;
   const x = 200 + col * CELL + offsetX;
   const y = 200 + row * CELL + offsetY;
   const z = Math.floor(rand() * 100);

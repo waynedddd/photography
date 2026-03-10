@@ -748,6 +748,18 @@ document.body.addEventListener('pointerup', () => {
   document.body.style.cursor = 'grab';
 });
 
+// Two-finger trackpad / mouse wheel to pan
+document.body.addEventListener('wheel', (e) => {
+  if (e.target.closest('#lightbox') || e.target.closest('#minimap') || e.target.closest('#filters')) return;
+  e.preventDefault();
+  panX -= e.deltaX;
+  panY -= e.deltaY;
+  canvas.style.transform = `translate(${panX}px, ${panY}px)`;
+  updateMinimap();
+  const hint = document.getElementById('hint');
+  if (hint) hint.style.opacity = '0';
+}, { passive: false });
+
 // Touch: also allow dragging from photos
 let touchStart = null;
 document.body.addEventListener('touchstart', (e) => {

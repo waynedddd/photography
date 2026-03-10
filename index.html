@@ -159,11 +159,8 @@
       z-index: 10000;
       opacity: 0;
       transition: opacity 0.3s ease;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 24px;
-      padding: 40px 20px;
     }
 
     #lb-backdrop {
@@ -178,88 +175,88 @@
       opacity: 1;
     }
 
-    #lightbox img {
+    #lb-polaroid {
+      position: relative;
+      z-index: 1;
+      background: var(--paper);
+      padding: 16px 16px 0 16px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.5);
       max-width: 88vw;
-      max-height: 65vh;
-      object-fit: contain;
-      position: relative;
-      z-index: 1;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      cursor: default;
     }
 
-    #lightbox .info {
-      text-align: center;
-      color: #fff;
-      flex-shrink: 0;
-      position: relative;
-      z-index: 1;
-      cursor: zoom-out;
-    }
-
-    #lightbox .info .title {
-      font-family: var(--serif);
-      font-size: 28px;
-      font-style: italic;
-      margin-bottom: 6px;
-    }
-
-    #lightbox .info .meta {
-      font-family: var(--mono);
-      font-size: 11px;
-      color: #888;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-    }
-
-    #lightbox .info .desc {
-      font-family: var(--serif);
-      font-size: 15px;
-      color: #aaa;
-      max-width: 500px;
-      margin: 0 auto;
-      line-height: 1.5;
-    }
-
-    #lb-note-card {
-      position: fixed;
-      font-family: 'Caveat', cursive;
-      font-size: 17px;
-      color: #3a3a3a;
-      background: #f4f0e8;
-      padding: 16px 20px 20px;
-      max-width: 260px;
-      line-height: 1.5;
-      z-index: 10001;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.4s 0.3s;
-      box-shadow: 2px 3px 12px rgba(0,0,0,0.3);
-      /* torn paper edges */
-      clip-path: polygon(
-        0% 2%, 3% 0%, 8% 1.5%, 14% 0.5%, 20% 2%, 26% 0%, 32% 1%, 38% 0.5%, 44% 2.5%, 50% 0%, 56% 1.5%, 62% 0%, 68% 2%, 74% 0.5%, 80% 1.5%, 86% 0%, 92% 2%, 97% 0.5%, 100% 2%,
-        100% 97%, 97% 100%, 92% 98%, 86% 100%, 80% 98.5%, 74% 100%, 68% 98%, 62% 100%, 56% 98.5%, 50% 100%, 44% 98%, 38% 100%, 32% 98.5%, 26% 100%, 20% 98%, 14% 100%, 8% 98.5%, 3% 100%, 0% 97%
-      );
-    }
-
-    #lb-note-card.show { opacity: 1; }
-
-    #lb-note-card .note-sig {
+    #lb-polaroid img {
       display: block;
-      margin-top: 6px;
-      font-size: 14px;
-      color: #888;
+      width: auto;
+      height: auto;
+      max-width: min(80vw, 900px);
+      max-height: 60vh;
+      object-fit: contain;
     }
+
+    #lb-bottom {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 12px 4px 14px;
+      min-height: 48px;
+    }
+
+    #lb-bottom .lb-text {
+      flex-shrink: 0;
+    }
+
+    #lb-bottom .title {
+      font-family: var(--serif);
+      font-size: 18px;
+      font-style: italic;
+      color: #1a1a1a;
+    }
+
+    #lb-bottom .meta {
+      font-family: var(--mono);
+      font-size: 9px;
+      color: #999;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    #lb-bottom .lb-note {
+      font-family: 'Caveat', cursive;
+      font-size: 16px;
+      color: #666;
+      line-height: 1.4;
+      text-align: right;
+      max-width: 280px;
+      transform: rotate(-0.5deg);
+    }
+
+    #lb-bottom .lb-note:empty { display: none; }
 
     @media (max-width: 768px) {
-      #lb-note-card {
-        position: relative !important;
-        top: auto !important;
-        left: auto !important;
-        right: auto !important;
-        bottom: auto !important;
-        margin: 16px auto;
-        transform: rotate(-1deg) !important;
-        max-width: 80vw;
+      #lb-polaroid {
+        padding: 10px 10px 0 10px;
+        max-width: 95vw;
+      }
+      #lb-polaroid img {
+        max-width: 90vw;
+        max-height: 55vh;
+      }
+      #lb-bottom {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 10px 2px 12px;
+      }
+      #lb-bottom .lb-note {
+        text-align: left;
+        max-width: 100%;
+        transform: rotate(-0.3deg);
       }
     }
 
@@ -473,13 +470,16 @@
 
 <div id="lightbox">
   <div id="lb-backdrop" onclick="closeLightbox()"></div>
-  <img id="lb-img" src="" alt="">
-  <div class="info" onclick="closeLightbox()">
-    <div class="title" id="lb-title"></div>
-    <div class="meta" id="lb-meta"></div>
-    <div class="desc" id="lb-desc"></div>
+  <div id="lb-polaroid">
+    <img id="lb-img" src="" alt="">
+    <div id="lb-bottom">
+      <div class="lb-text">
+        <div class="title" id="lb-title"></div>
+        <div class="meta" id="lb-meta"></div>
+      </div>
+      <div class="lb-note" id="lb-note"></div>
+    </div>
   </div>
-  <div id="lb-note-card"></div>
 </div>
 
 <div id="minimap">
@@ -723,49 +723,8 @@ function openLightbox(idx) {
   document.getElementById('lb-img').src = p.url;
   document.getElementById('lb-title').textContent = p.title;
   document.getElementById('lb-meta').textContent = p.meta;
-  document.getElementById('lb-desc').textContent = p.desc;
-  const noteCard = document.getElementById('lb-note-card');
-  noteCard.classList.remove('show');
-  if (p.note) {
-    noteCard.innerHTML = p.note + '<span class="note-sig">— Kit</span>';
-    // Position note card adjacent to the photo (not overlapping)
-    const rot = (Math.random() * 6 - 3).toFixed(1);
-    noteCard.style.transform = 'rotate(' + rot + 'deg)';
-    // Reset position, will set after image renders
-    Object.assign(noteCard.style, { top: '', left: '', right: '', bottom: '' });
-    const positionNote = () => {
-      const img = document.getElementById('lb-img');
-      const rect = img.getBoundingClientRect();
-      const side = idx % 2; // alternate left/right
-      if (side === 0) {
-        // right side of image
-        noteCard.style.left = (rect.right + 12) + 'px';
-        noteCard.style.right = 'auto';
-      } else {
-        // left side of image
-        noteCard.style.right = (window.innerWidth - rect.left + 12) + 'px';
-        noteCard.style.left = 'auto';
-      }
-      // vertically: align to bottom half of image
-      noteCard.style.top = (rect.bottom - 80) + 'px';
-      noteCard.style.bottom = 'auto';
-      // If note goes off-screen, fall back to below image
-      const noteRect = noteCard.getBoundingClientRect();
-      if (noteRect.right > window.innerWidth - 10 || noteRect.left < 10) {
-        noteCard.style.left = rect.left + 'px';
-        noteCard.style.right = 'auto';
-        noteCard.style.top = (rect.bottom + 12) + 'px';
-      }
-    };
-    const img = document.getElementById('lb-img');
-    if (img.complete && img.naturalWidth) {
-      requestAnimationFrame(() => { positionNote(); noteCard.classList.add('show'); });
-    } else {
-      img.addEventListener('load', () => { positionNote(); noteCard.classList.add('show'); }, { once: true });
-    }
-  } else {
-    noteCard.innerHTML = '';
-  }
+  const noteEl = document.getElementById('lb-note');
+  noteEl.textContent = p.note ? p.note + ' — Kit' : '';
   lb.style.display = 'flex';
   requestAnimationFrame(() => lb.classList.add('active'));
 }

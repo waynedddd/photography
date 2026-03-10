@@ -289,9 +289,129 @@
         max-width: 85vw;
       }
     }
+
+    /* Filter bar */
+    #filters {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9998;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 90vw;
+    }
+
+    #filters .group {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    #filters .divider {
+      width: 1px;
+      height: 16px;
+      background: rgba(255,255,255,0.15);
+      margin: 0 6px;
+    }
+
+    .fbtn {
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.4);
+      padding: 5px 12px;
+      cursor: pointer;
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: all 0.25s;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+
+    .fbtn:hover {
+      color: rgba(255,255,255,0.7);
+      border-color: rgba(255,255,255,0.3);
+    }
+
+    .fbtn.active {
+      background: rgba(255,255,255,0.12);
+      color: var(--paper);
+      border-color: rgba(255,255,255,0.4);
+    }
+
+    .fbtn .emoji {
+      margin-right: 4px;
+    }
+
+    /* Filtered-out photos */
+    .photo.dimmed {
+      opacity: 0.08 !important;
+      pointer-events: none;
+      filter: grayscale(1);
+    }
+
+    .photo.piled {
+      transition: left 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+                  top 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+                  transform 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+                  opacity 0.4s ease,
+                  filter 0.4s ease,
+                  box-shadow 0.35s ease;
+    }
+
+    /* Pile counter */
+    #pile-count {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--mono);
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 1px;
+      z-index: 9998;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+
+    #pile-count.show { opacity: 1; }
+
+    @media (max-width: 768px) {
+      #filters {
+        top: 12px;
+        gap: 4px;
+      }
+      .fbtn {
+        font-size: 8px;
+        padding: 4px 8px;
+      }
+      #filters .divider {
+        margin: 0 3px;
+      }
+    }
   </style>
 </head>
 <body>
+
+<div id="filters">
+  <div class="group" id="season-filters">
+    <button class="fbtn" data-season="spring"><span class="emoji">🌸</span>Spring</button>
+    <button class="fbtn" data-season="summer"><span class="emoji">☀️</span>Summer</button>
+    <button class="fbtn" data-season="autumn"><span class="emoji">🍂</span>Autumn</button>
+    <button class="fbtn" data-season="winter"><span class="emoji">❄️</span>Winter</button>
+  </div>
+  <div class="divider"></div>
+  <div class="group" id="location-filters"></div>
+</div>
+
+<div id="pile-count"></div>
 
 <div id="canvas"></div>
 
@@ -625,6 +745,139 @@ setTimeout(() => {
 }, 4000);
 
 initMinimap();
+
+// --- Filters: season + location ---
+const seasonMap = {
+  spring: ['2024-03','2024-04','2024-05'],
+  summer: ['2024-07','2024-08','2024-09'],
+  autumn: ['2024-10','2024-11'],
+  winter: ['2024-02','2024-12','2025-01','2025-02']
+};
+
+// Extract unique locations from meta (first word before comma)
+const locations = [...new Set(photos.map(p => {
+  const m = p.meta.match(/^([^,·]+)/);
+  return m ? m[1].trim() : 'Other';
+}))].sort();
+
+// Build location buttons
+const locGroup = document.getElementById('location-filters');
+locations.forEach(loc => {
+  const btn = document.createElement('button');
+  btn.className = 'fbtn';
+  btn.dataset.location = loc;
+  btn.textContent = loc;
+  locGroup.appendChild(btn);
+});
+
+// Store original positions
+const photoEls = document.querySelectorAll('.photo');
+const originals = new Map();
+photoEls.forEach(el => {
+  originals.set(el, {
+    left: el.style.left,
+    top: el.style.top,
+    transform: el.style.transform,
+    zIndex: el.style.zIndex
+  });
+});
+
+let activeFilter = null; // { type: 'season'|'location', value: string }
+
+function getPhotoForEl(el) {
+  const idx = parseInt(el.dataset.idx);
+  return shuffled[idx];
+}
+
+function matchesFilter(photo) {
+  if (!activeFilter) return true;
+  if (activeFilter.type === 'season') {
+    return seasonMap[activeFilter.value].includes(photo.date);
+  }
+  if (activeFilter.type === 'location') {
+    const m = photo.meta.match(/^([^,·]+)/);
+    const loc = m ? m[1].trim() : 'Other';
+    return loc === activeFilter.value;
+  }
+  return true;
+}
+
+function applyFilter() {
+  const pileCount = document.getElementById('pile-count');
+
+  if (!activeFilter) {
+    // Reset all to original positions
+    photoEls.forEach(el => {
+      el.classList.add('piled');
+      el.classList.remove('dimmed');
+      const orig = originals.get(el);
+      el.style.left = orig.left;
+      el.style.top = orig.top;
+      el.style.transform = orig.transform;
+      el.style.zIndex = orig.zIndex;
+    });
+    pileCount.classList.remove('show');
+    // Remove piled class after transition
+    setTimeout(() => photoEls.forEach(el => el.classList.remove('piled')), 700);
+    return;
+  }
+
+  // Calculate pile center (viewport center in canvas coords)
+  const cx = (-panX + vw / 2);
+  const cy = (-panY + vh / 2);
+
+  let matchCount = 0;
+  let pileIdx = 0;
+
+  photoEls.forEach(el => {
+    el.classList.add('piled');
+    const photo = getPhotoForEl(el);
+    const matches = matchesFilter(photo);
+
+    if (matches) {
+      matchCount++;
+      el.classList.remove('dimmed');
+      // Stack with small random offsets
+      const stackX = cx - 120 + (rand() - 0.5) * 40;
+      const stackY = cy - 100 + (rand() - 0.5) * 40;
+      const stackRot = (rand() - 0.5) * 16;
+      el.style.left = stackX + 'px';
+      el.style.top = stackY + 'px';
+      el.style.transform = `rotate(${stackRot}deg)`;
+      el.style.zIndex = 5000 + pileIdx;
+      pileIdx++;
+    } else {
+      el.classList.add('dimmed');
+    }
+  });
+
+  pileCount.textContent = `${matchCount} photos`;
+  pileCount.classList.add('show');
+}
+
+// Click handlers
+document.getElementById('filters').addEventListener('click', (e) => {
+  const btn = e.target.closest('.fbtn');
+  if (!btn) return;
+
+  const wasSame = btn.classList.contains('active');
+
+  // Clear all active
+  document.querySelectorAll('.fbtn').forEach(b => b.classList.remove('active'));
+
+  if (wasSame) {
+    activeFilter = null;
+  } else {
+    btn.classList.add('active');
+    if (btn.dataset.season) {
+      activeFilter = { type: 'season', value: btn.dataset.season };
+    } else if (btn.dataset.location) {
+      activeFilter = { type: 'location', value: btn.dataset.location };
+    }
+  }
+
+  applyFilter();
+});
 </script>
 </body>
 </html>

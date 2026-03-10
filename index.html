@@ -529,9 +529,9 @@ const shuffled = [...photos].sort(() => rand() - 0.5);
 shuffled.forEach((p, i) => {
   const col = i % COLS;
   const row = Math.floor(i / COLS);
-  // Size variation: 3 tiers for rhythm (small / medium / large)
-  const sizeRoll = rand();
-  const sizeMult = sizeRoll < 0.3 ? 0.8 : sizeRoll < 0.7 ? 1.0 : 1.25;
+  // Size variation: deterministic pattern to spread sizes evenly
+  const sizePattern = [1.0, 0.8, 1.25, 0.8, 1.0, 1.25, 0.8, 1.0, 0.8, 1.25, 1.0, 1.25];
+  const sizeMult = sizePattern[i % sizePattern.length];
   const baseW = p.orient === 'v' ? PHOTO_W_V : PHOTO_W_H;
   const w = Math.round(baseW * sizeMult);
   const rotation = (rand() - 0.5) * (isMobile ? 8 : 12); // subtler on mobile

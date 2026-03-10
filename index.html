@@ -257,21 +257,36 @@
 
     @media (max-width: 768px) {
       .photo {
-        padding: 8px 8px 30px 8px;
+        padding: 6px 6px 24px 6px;
       }
       .photo .label {
         font-size: 7px;
-        bottom: 8px;
-        left: 8px;
+        bottom: 6px;
+        left: 6px;
       }
       #minimap {
-        width: 100px;
-        height: 62px;
+        width: 90px;
+        height: 56px;
         bottom: 12px;
         right: 12px;
       }
       #hint {
         font-size: 10px;
+      }
+      #lightbox {
+        padding: 20px 12px;
+        gap: 16px;
+      }
+      #lightbox img {
+        max-width: 94vw;
+        max-height: 55vh;
+      }
+      #lightbox .info .title {
+        font-size: 20px;
+      }
+      #lightbox .info .desc {
+        font-size: 13px;
+        max-width: 85vw;
       }
     }
   </style>
@@ -368,10 +383,11 @@ const photos = [
 ];
 
 // --- Layout: scatter photos on a large canvas ---
-const PHOTO_W_H = 240;  // horizontal photo width
-const PHOTO_W_V = 170;  // vertical photo width
-const COLS = Math.ceil(Math.sqrt(photos.length * 1.8));
-const CELL = 260;  // moderate overlap
+const isMobile = window.innerWidth <= 768;
+const PHOTO_W_H = isMobile ? 160 : 240;
+const PHOTO_W_V = isMobile ? 110 : 170;
+const COLS = Math.ceil(Math.sqrt(photos.length * (isMobile ? 2.2 : 1.8)));
+const CELL = isMobile ? 170 : 260;  // moderate overlap
 const CANVAS_W = COLS * CELL + 400;
 const CANVAS_H = Math.ceil(photos.length / COLS) * CELL + 400;
 const canvas = document.getElementById('canvas');
@@ -395,9 +411,9 @@ shuffled.forEach((p, i) => {
   const col = i % COLS;
   const row = Math.floor(i / COLS);
   const w = p.orient === 'v' ? PHOTO_W_V : PHOTO_W_H;
-  const rotation = (rand() - 0.5) * 12; // ±6° subtle
-  const offsetX = (rand() - 0.5) * 60;
-  const offsetY = (rand() - 0.5) * 60;
+  const rotation = (rand() - 0.5) * (isMobile ? 8 : 12); // subtler on mobile
+  const offsetX = (rand() - 0.5) * (isMobile ? 40 : 60);
+  const offsetY = (rand() - 0.5) * (isMobile ? 40 : 60);
   const x = 200 + col * CELL + offsetX;
   const y = 200 + row * CELL + offsetY;
   const z = Math.floor(rand() * 100);
@@ -546,6 +562,22 @@ document.addEventListener('keydown', (e) => {
   }
   if (e.key === 'ArrowLeft') {
     openLightbox((currentLB - 1 + photos.length) % photos.length);
+  }
+});
+
+// Lightbox swipe (mobile)
+let lbTouchX = 0;
+const lbEl = document.getElementById('lightbox');
+lbEl.addEventListener('touchstart', (e) => {
+  lbTouchX = e.touches[0].clientX;
+}, { passive: true });
+lbEl.addEventListener('touchend', (e) => {
+  const dx = e.changedTouches[0].clientX - lbTouchX;
+  if (Math.abs(dx) > 50) {
+    if (dx < 0) openLightbox((currentLB + 1) % photos.length);
+    else openLightbox((currentLB - 1 + photos.length) % photos.length);
+  } else if (Math.abs(dx) < 10) {
+    closeLightbox();
   }
 });
 

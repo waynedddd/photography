@@ -216,10 +216,23 @@
       font-style: italic;
       color: #666;
       max-width: 520px;
-      margin: 12px auto 0;
+      margin: 16px auto 0;
       line-height: 1.7;
-      border-top: 1px solid rgba(255,255,255,0.08);
-      padding-top: 12px;
+      padding: 14px 20px;
+      background: rgba(255,255,255,0.04);
+      border-left: 2px solid rgba(255,255,255,0.15);
+      text-align: left;
+    }
+
+    #lightbox .info .note::after {
+      content: '— Kit 🔧';
+      display: block;
+      margin-top: 8px;
+      font-style: normal;
+      font-family: var(--mono);
+      font-size: 9px;
+      color: #555;
+      letter-spacing: 1px;
     }
 
     #lightbox .info .note:empty {

@@ -728,18 +728,41 @@ function openLightbox(idx) {
   noteCard.classList.remove('show');
   if (p.note) {
     noteCard.innerHTML = p.note + '<span class="note-sig">— Kit</span>';
-    // random position: pick one of 4 zones (top-right, bottom-left, bottom-right, top-left), avoid center title area
-    const zones = [
-      { top: '40px', right: '30px', left: 'auto', bottom: 'auto' },
-      { bottom: '30px', left: '30px', top: 'auto', right: 'auto' },
-      { bottom: '30px', right: '30px', top: 'auto', left: 'auto' },
-      { top: '40px', left: '30px', right: 'auto', bottom: 'auto' },
-    ];
-    const zone = zones[idx % zones.length];
+    // Position note card adjacent to the photo (not overlapping)
     const rot = (Math.random() * 6 - 3).toFixed(1);
-    Object.assign(noteCard.style, zone);
     noteCard.style.transform = 'rotate(' + rot + 'deg)';
-    requestAnimationFrame(() => noteCard.classList.add('show'));
+    // Reset position, will set after image renders
+    Object.assign(noteCard.style, { top: '', left: '', right: '', bottom: '' });
+    const positionNote = () => {
+      const img = document.getElementById('lb-img');
+      const rect = img.getBoundingClientRect();
+      const side = idx % 2; // alternate left/right
+      if (side === 0) {
+        // right side of image
+        noteCard.style.left = (rect.right + 12) + 'px';
+        noteCard.style.right = 'auto';
+      } else {
+        // left side of image
+        noteCard.style.right = (window.innerWidth - rect.left + 12) + 'px';
+        noteCard.style.left = 'auto';
+      }
+      // vertically: align to bottom half of image
+      noteCard.style.top = (rect.bottom - 80) + 'px';
+      noteCard.style.bottom = 'auto';
+      // If note goes off-screen, fall back to below image
+      const noteRect = noteCard.getBoundingClientRect();
+      if (noteRect.right > window.innerWidth - 10 || noteRect.left < 10) {
+        noteCard.style.left = rect.left + 'px';
+        noteCard.style.right = 'auto';
+        noteCard.style.top = (rect.bottom + 12) + 'px';
+      }
+    };
+    const img = document.getElementById('lb-img');
+    if (img.complete && img.naturalWidth) {
+      requestAnimationFrame(() => { positionNote(); noteCard.classList.add('show'); });
+    } else {
+      img.addEventListener('load', () => { positionNote(); noteCard.classList.add('show'); }, { once: true });
+    }
   } else {
     noteCard.innerHTML = '';
   }

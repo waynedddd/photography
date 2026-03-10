@@ -222,6 +222,7 @@
       border-radius: 4px;
       z-index: 9999;
       overflow: hidden;
+      cursor: pointer;
     }
 
     #minimap .viewport {
@@ -229,6 +230,7 @@
       border: 1px solid rgba(255,255,255,0.4);
       background: rgba(255,255,255,0.05);
       pointer-events: none;
+      transition: left 0.15s ease, top 0.15s ease;
     }
 
     #minimap .dot {
@@ -748,6 +750,58 @@ setTimeout(() => {
 }, 4000);
 
 initMinimap();
+
+// --- Minimap click/drag to navigate ---
+const mmEl = document.getElementById('minimap');
+let mmDragging = false;
+
+function mmNavigate(clientX, clientY) {
+  const rect = mmEl.getBoundingClientRect();
+  const mx = clientX - rect.left;
+  const my = clientY - rect.top;
+  const mmW = mmEl.offsetWidth;
+  const mmH = mmEl.offsetHeight;
+  // Convert minimap coords to canvas coords, center viewport there
+  const canvasX = (mx / mmW) * CANVAS_W;
+  const canvasY = (my / mmH) * CANVAS_H;
+  panX = -(canvasX - vw / 2);
+  panY = -(canvasY - vh / 2);
+  canvas.style.transform = `translate(${panX}px, ${panY}px)`;
+  updateMinimap();
+}
+
+mmEl.addEventListener('mousedown', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  mmDragging = true;
+  mmNavigate(e.clientX, e.clientY);
+});
+
+document.addEventListener('mousemove', (e) => {
+  if (!mmDragging) return;
+  mmNavigate(e.clientX, e.clientY);
+});
+
+document.addEventListener('mouseup', () => {
+  mmDragging = false;
+});
+
+// Touch support for minimap
+mmEl.addEventListener('touchstart', (e) => {
+  e.stopPropagation();
+  mmDragging = true;
+  mmNavigate(e.touches[0].clientX, e.touches[0].clientY);
+}, { passive: true });
+
+mmEl.addEventListener('touchmove', (e) => {
+  if (!mmDragging) return;
+  e.stopPropagation();
+  mmNavigate(e.touches[0].clientX, e.touches[0].clientY);
+}, { passive: true });
+
+mmEl.addEventListener('touchend', () => {
+  mmDragging = false;
+});
 
 // --- Filters: season + location ---
 const seasonMap = {

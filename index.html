@@ -735,7 +735,7 @@ function openLightbox(idx) {
       { bottom: '30px', right: '30px', top: 'auto', left: 'auto' },
       { top: '40px', left: '30px', right: 'auto', bottom: 'auto' },
     ];
-    const zone = zones[lbIdx % zones.length];
+    const zone = zones[idx % zones.length];
     const rot = (Math.random() * 6 - 3).toFixed(1);
     Object.assign(noteCard.style, zone);
     noteCard.style.transform = 'rotate(' + rot + 'deg)';

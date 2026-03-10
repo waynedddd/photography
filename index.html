@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Wayne — Photography</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,278 +13,262 @@
     :root {
       --serif: 'Instrument Serif', Georgia, serif;
       --mono: 'Space Mono', monospace;
-      --bg: #f5f0e8;
-      --ink: #1a1a1a;
-      --grey: #888;
-      --light: #ccc;
+      --bg: #111;
+      --film: #0a0a0a;
+      --border: #222;
+      --text: #999;
+      --text-dim: #444;
+      --accent: #f5f0e8;
     }
 
     html {
-      height: 100%;
+      scroll-behavior: smooth;
     }
 
     body {
-      height: 100%;
-      overflow: hidden;
       background: var(--bg);
-      color: var(--ink);
+      color: var(--text);
       font-family: var(--mono);
-      -webkit-user-select: none;
-      user-select: none;
-      -webkit-text-size-adjust: 100%;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
     }
 
-    #zine {
+    /* Header */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    header h1 {
+      font-family: var(--serif);
+      font-size: 24px;
+      font-style: italic;
+      color: var(--accent);
+      font-weight: normal;
+    }
+
+    header .count {
+      font-size: 10px;
+      color: var(--text-dim);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    /* Filter bar */
+    .filters {
+      position: sticky;
+      top: 65px;
+      z-index: 99;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 32px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 10px;
+    }
+
+    .filter-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      padding: 4px 12px;
+      cursor: pointer;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: all 0.2s;
+      border-radius: 0;
+    }
+
+    .filter-btn:hover {
+      color: var(--text);
+      border-color: var(--text);
+    }
+
+    .filter-btn.active {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    /* Grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 2px;
+      padding: 2px;
+      background: var(--film);
+    }
+
+    /* Cell */
+    .cell {
+      position: relative;
+      background: var(--film);
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .cell .frame {
       position: relative;
       width: 100%;
-      height: 100%;
+      padding-top: 66.67%; /* 3:2 default */
       overflow: hidden;
     }
 
-    .page {
+    .cell.portrait .frame {
+      padding-top: 150%; /* 2:3 */
+    }
+
+    .cell img {
       position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      transform: translateX(60px);
-      transition: opacity 0.5s ease, transform 0.5s ease;
-      pointer-events: none;
-      will-change: transform, opacity;
-    }
-
-    .page.active {
-      opacity: 1;
-      transform: translateX(0);
-      pointer-events: auto;
-    }
-
-    .page.prev {
-      opacity: 0;
-      transform: translateX(-60px);
-    }
-
-    /* Layout: Full Bleed */
-    .layout-bleed {
-      padding: 0;
-    }
-    .layout-bleed img {
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
       object-fit: cover;
+      filter: grayscale(30%) contrast(1.05);
+      transition: filter 0.4s ease, transform 0.4s ease;
     }
-    .layout-bleed .overlay {
+
+    .cell:hover img {
+      filter: grayscale(0%) contrast(1);
+      transform: scale(1.03);
+    }
+
+    /* Film edge marks */
+    .cell .edge {
       position: absolute;
-      bottom: 40px;
-      left: 40px;
-      right: 40px;
+      top: 6px;
+      left: 8px;
+      right: 8px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 8px;
+      color: rgba(255,140,0,0.5);
+      font-family: var(--mono);
+      letter-spacing: 1px;
+      pointer-events: none;
+      z-index: 2;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
     }
-    .layout-bleed .overlay .title {
+
+    /* Bottom info */
+    .cell .info {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 40px 10px 8px;
+      background: linear-gradient(transparent, rgba(0,0,0,0.7));
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+
+    .cell:hover .info {
+      opacity: 1;
+    }
+
+    .cell .info .title {
       font-family: var(--serif);
-      font-size: clamp(28px, 5vw, 56px);
+      font-size: 15px;
       font-style: italic;
       color: #fff;
-      text-shadow: 0 2px 20px rgba(0,0,0,0.5);
+      margin-bottom: 2px;
+    }
+
+    .cell .info .meta {
+      font-size: 9px;
+      color: rgba(255,255,255,0.5);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    /* Section headers in grid */
+    .section-header {
+      grid-column: 1 / -1;
+      padding: 48px 32px 16px;
+      background: var(--bg);
+    }
+
+    .section-header h2 {
+      font-family: var(--serif);
+      font-size: 32px;
+      font-style: italic;
+      color: var(--accent);
+      font-weight: normal;
       margin-bottom: 4px;
     }
-    .layout-bleed .overlay .meta {
-      font-family: var(--mono);
-      font-size: clamp(9px, 1.2vw, 12px);
-      color: rgba(255,255,255,0.7);
+
+    .section-header .sub {
+      font-size: 10px;
+      color: var(--text-dim);
       letter-spacing: 2px;
       text-transform: uppercase;
     }
 
-    /* Layout: White Space (big margins, text) */
-    .layout-white {
-      flex-direction: column;
-      padding: 8vh 10vw;
-      gap: 24px;
-    }
-    .layout-white img {
-      max-width: 65vw;
-      max-height: 55vh;
-      object-fit: contain;
-    }
-    .layout-white .text {
-      max-width: 500px;
-      text-align: center;
-    }
-    .layout-white .text .title {
-      font-family: var(--serif);
-      font-size: clamp(24px, 3.5vw, 42px);
-      font-style: italic;
-      margin-bottom: 8px;
-    }
-    .layout-white .text .desc {
-      font-family: var(--serif);
-      font-size: clamp(13px, 1.8vw, 17px);
-      color: #555;
-      line-height: 1.7;
-      margin-bottom: 8px;
-    }
-    .layout-white .text .meta {
-      font-family: var(--mono);
-      font-size: 10px;
-      color: var(--grey);
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
+    /* Lightbox */
+    #lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgba(0,0,0,0.95);
+      cursor: zoom-out;
     }
 
-    /* Layout: Side by Side (two photos) */
-    .layout-duo {
-      padding: 6vh 5vw;
-      gap: 3vw;
-    }
-    .layout-duo .duo-item {
+    #lightbox.active {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 12px;
-      flex: 1;
-      min-width: 0;
+      justify-content: center;
     }
-    .layout-duo img {
-      width: 100%;
-      max-height: 70vh;
+
+    #lightbox img {
+      max-width: 90vw;
+      max-height: 75vh;
       object-fit: contain;
     }
-    .layout-duo .caption {
+
+    #lightbox .lb-info {
+      margin-top: 20px;
       text-align: center;
     }
-    .layout-duo .caption .title {
+
+    #lightbox .lb-info .title {
       font-family: var(--serif);
-      font-size: 18px;
+      font-size: 26px;
       font-style: italic;
-    }
-    .layout-duo .caption .meta {
-      font-family: var(--mono);
-      font-size: 9px;
-      color: var(--grey);
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      margin-top: 2px;
+      color: var(--accent);
+      margin-bottom: 6px;
     }
 
-    /* Layout: Vertical Center (portrait photo, text to side) */
-    .layout-portrait {
-      padding: 5vh 8vw;
-      gap: 5vw;
-    }
-    .layout-portrait img {
-      max-height: 80vh;
-      max-width: 40vw;
-      object-fit: contain;
-    }
-    .layout-portrait .side {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      max-width: 320px;
-    }
-    .layout-portrait .side .title {
+    #lightbox .lb-info .desc {
       font-family: var(--serif);
-      font-size: clamp(26px, 3vw, 40px);
-      font-style: italic;
-      margin-bottom: 12px;
+      font-size: 14px;
+      color: #777;
+      max-width: 500px;
+      line-height: 1.6;
+      margin: 0 auto 8px;
     }
-    .layout-portrait .side .desc {
-      font-family: var(--serif);
-      font-size: 15px;
-      color: #555;
-      line-height: 1.7;
-      margin-bottom: 12px;
-    }
-    .layout-portrait .side .meta {
-      font-family: var(--mono);
+
+    #lightbox .lb-info .meta {
       font-size: 10px;
-      color: var(--grey);
+      color: var(--text-dim);
       letter-spacing: 1.5px;
       text-transform: uppercase;
     }
 
-    /* Layout: Text Only (section divider) */
-    .layout-text {
-      flex-direction: column;
-      gap: 12px;
-    }
-    .layout-text .big {
-      font-family: var(--serif);
-      font-size: clamp(36px, 7vw, 80px);
-      font-style: italic;
-      color: var(--ink);
-    }
-    .layout-text .sub {
-      font-family: var(--mono);
-      font-size: clamp(10px, 1.5vw, 13px);
-      color: var(--grey);
-      letter-spacing: 3px;
-      text-transform: uppercase;
-    }
-
-    /* Cover */
-    .layout-cover {
-      flex-direction: column;
-      gap: 16px;
-      background: var(--ink);
-    }
-    .layout-cover .cover-title {
-      font-family: var(--serif);
-      font-size: clamp(40px, 8vw, 90px);
-      font-style: italic;
-      color: var(--bg);
-      letter-spacing: -1px;
-    }
-    .layout-cover .cover-sub {
-      font-family: var(--mono);
-      font-size: clamp(9px, 1.2vw, 12px);
-      color: var(--grey);
-      letter-spacing: 4px;
-      text-transform: uppercase;
-    }
-    .layout-cover .cover-hint {
+    #lightbox .nav {
       position: absolute;
-      bottom: 40px;
-      font-family: var(--mono);
-      font-size: 10px;
-      color: rgba(255,255,255,0.2);
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      animation: pulse 2s ease-in-out infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 0.2; }
-      50% { opacity: 0.5; }
-    }
-
-    /* Page counter */
-    #counter {
-      position: fixed;
-      bottom: 20px;
-      right: 24px;
-      font-family: var(--mono);
-      font-size: 10px;
-      color: var(--grey);
-      letter-spacing: 1px;
-      z-index: 100;
-      mix-blend-mode: difference;
-    }
-
-    /* Progress bar */
-    #progress {
-      position: fixed;
-      top: 0;
-      left: 0;
-      height: 2px;
-      background: var(--ink);
-      transition: width 0.4s ease;
-      z-index: 100;
-    }
-
-    /* Nav arrows */
-    .nav-arrow {
-      position: fixed;
       top: 50%;
       transform: translateY(-50%);
       width: 50px;
@@ -293,53 +277,80 @@
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      z-index: 100;
-      opacity: 0.15;
-      transition: opacity 0.3s;
-      mix-blend-mode: difference;
+      opacity: 0.3;
+      transition: opacity 0.2s;
     }
-    .nav-arrow:hover { opacity: 0.5; }
-    .nav-arrow svg { width: 20px; height: 20px; fill: none; stroke: var(--ink); stroke-width: 2; }
-    #nav-prev { left: 12px; }
-    #nav-next { right: 12px; }
+
+    #lightbox .nav:hover { opacity: 0.7; }
+    #lightbox .nav svg { width: 24px; height: 24px; fill: none; stroke: #fff; stroke-width: 1.5; }
+    #lightbox .nav.prev { left: 16px; }
+    #lightbox .nav.next { right: 16px; }
+
+    /* Footer */
+    footer {
+      padding: 48px 32px;
+      text-align: center;
+      border-top: 1px solid var(--border);
+    }
+
+    footer .sig {
+      font-family: var(--serif);
+      font-size: 18px;
+      font-style: italic;
+      color: var(--text-dim);
+    }
 
     /* Mobile */
-    @media (max-width: 768px) {
-      .layout-white { padding: 6vh 6vw; }
-      .layout-white img { max-width: 85vw; max-height: 50vh; }
-      .layout-portrait {
-        flex-direction: column;
-        padding: 4vh 6vw;
-        gap: 20px;
+    @media (max-width: 600px) {
+      .grid {
+        grid-template-columns: repeat(2, 1fr);
       }
-      .layout-portrait img { max-width: 80vw; max-height: 55vh; }
-      .layout-portrait .side { max-width: 90vw; text-align: center; }
-      .layout-duo {
-        flex-direction: column;
-        padding: 4vh 6vw;
-        gap: 20px;
+      header { padding: 16px 16px; }
+      .filters { padding: 10px 16px; top: 57px; }
+      .section-header { padding: 32px 16px 12px; }
+      .section-header h2 { font-size: 24px; }
+      .cell .edge { font-size: 7px; }
+      .cell .info { opacity: 1; padding: 24px 6px 6px; }
+      .cell .info .title { font-size: 12px; }
+      .cell .info .meta { font-size: 8px; }
+      #lightbox .nav { display: none; }
+    }
+
+    @media (min-width: 1400px) {
+      .grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       }
-      .layout-duo img { max-height: 35vh; }
-      .layout-bleed .overlay {
-        bottom: 20px;
-        left: 20px;
-        right: 20px;
-      }
-      .nav-arrow { display: none; }
     }
   </style>
 </head>
 <body>
 
-<div id="zine"></div>
-<div id="progress" style="width: 0%"></div>
-<div id="counter"></div>
+<header>
+  <h1>Contact Sheet</h1>
+  <span class="count" id="photo-count"></span>
+</header>
 
-<div class="nav-arrow" id="nav-prev" onclick="go(-1)">
-  <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-</div>
-<div class="nav-arrow" id="nav-next" onclick="go(1)">
-  <svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+<div class="filters" id="filters"></div>
+
+<div class="grid" id="grid"></div>
+
+<footer>
+  <div class="sig">Wayne · 2024 — 2025</div>
+</footer>
+
+<div id="lightbox" onclick="handleLBClick(event)">
+  <div class="nav prev" onclick="event.stopPropagation();lbGo(-1)">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+  </div>
+  <img id="lb-img" src="" alt="">
+  <div class="lb-info">
+    <div class="title" id="lb-title"></div>
+    <div class="desc" id="lb-desc"></div>
+    <div class="meta" id="lb-meta"></div>
+  </div>
+  <div class="nav next" onclick="event.stopPropagation();lbGo(1)">
+    <svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+  </div>
 </div>
 
 <script>
@@ -408,187 +419,134 @@ const photos = [
   { url: 'photos/web/DSC00208.jpg', title: 'Night Walk', meta: 'China, 2024 · Sony', desc: 'Street lights draw long shadows. The city is still awake.', orient: 'h', date: '2024-12' }
 ];
 
-// --- Group into sections by location/date ---
+// --- Sections ---
 const sections = [
-  { title: 'Haikou', sub: 'February 2025', photos: photos.filter(p => p.date === '2025-02') },
-  { title: 'Japan', sub: 'January 2025', photos: photos.filter(p => p.date === '2025-01') },
-  { title: 'Kyoto · Nara', sub: 'Autumn 2024', photos: photos.filter(p => p.date === '2024-11') },
-  { title: 'Silk Road', sub: 'Xinjiang · Summer 2024', photos: photos.filter(p => p.date === '2024-08') },
-  { title: 'Suwon', sub: 'Korea · September 2024', photos: photos.filter(p => p.date === '2024-09') },
-  { title: 'Matsumoto · Tokyo', sub: 'Summer 2024', photos: photos.filter(p => p.date === '2024-07') },
-  { title: 'Hirosaki · Portland', sub: 'Spring 2024', photos: photos.filter(p => p.date === '2024-04') },
-  { title: 'Sakura · Seagulls', sub: 'Spring 2024', photos: photos.filter(p => p.date === '2024-05') },
-  { title: 'Hokkaido', sub: 'Winter 2024', photos: photos.filter(p => p.date === '2024-12') },
-  { title: 'Journeys', sub: 'Elsewhere · 2024', photos: photos.filter(p => ['2024-02','2024-03','2024-10'].includes(p.date)) },
+  { id: 'haikou', title: 'Haikou', sub: 'February 2025', filter: p => p.date === '2025-02' },
+  { id: 'japan25', title: 'Tokyo · Japan', sub: 'January 2025', filter: p => p.date === '2025-01' },
+  { id: 'kyoto', title: 'Kyoto · Nara', sub: 'Autumn 2024', filter: p => p.date === '2024-11' },
+  { id: 'xinjiang', title: 'Silk Road', sub: 'Xinjiang · Summer 2024', filter: p => p.date === '2024-08' },
+  { id: 'korea', title: 'Suwon', sub: 'Korea · September 2024', filter: p => p.date === '2024-09' },
+  { id: 'summer', title: 'Matsumoto · Tokyo', sub: 'Summer 2024', filter: p => p.date === '2024-07' },
+  { id: 'spring', title: 'Spring', sub: 'Hirosaki · Portland · 2024', filter: p => ['2024-04','2024-05'].includes(p.date) },
+  { id: 'hokkaido', title: 'Hokkaido', sub: 'Winter 2024', filter: p => p.date === '2024-12' },
+  { id: 'journeys', title: 'Journeys', sub: 'Elsewhere · 2024', filter: p => ['2024-02','2024-03','2024-10'].includes(p.date) },
 ];
 
-// --- Build page data (no DOM yet) ---
-const pageData = []; // array of { html, layoutClass }
+// --- Render ---
+const grid = document.getElementById('grid');
+const filtersEl = document.getElementById('filters');
+let flatList = []; // for lightbox navigation
+let activeFilter = 'all';
 
-function addPageData(html, layoutClass) {
-  pageData.push({ html, layoutClass });
-}
-
-addPageData(`
-  <div class="cover-title">Wayne</div>
-  <div class="cover-sub">Photography · 2024 — 2025</div>
-  <div class="cover-hint">→ swipe or press arrow keys</div>
-`, 'layout-cover');
-
-const layoutPatterns = ['bleed', 'white', 'bleed', 'portrait', 'duo', 'white', 'bleed'];
-let patIdx = 0;
+// Filters
+const allBtn = document.createElement('button');
+allBtn.className = 'filter-btn active';
+allBtn.textContent = 'All';
+allBtn.dataset.filter = 'all';
+filtersEl.appendChild(allBtn);
 
 sections.forEach(sec => {
-  if (sec.photos.length === 0) return;
-
-  addPageData(`
-    <div class="big">${sec.title}</div>
-    <div class="sub">${sec.sub}</div>
-  `, 'layout-text');
-
-  let i = 0;
-  while (i < sec.photos.length) {
-    const p = sec.photos[i];
-    const p2 = sec.photos[i + 1];
-
-    if (p.orient === 'v') {
-      addPageData(`
-        <img src="${p.url}" alt="${p.title}">
-        <div class="side">
-          <div class="title">${p.title}</div>
-          <div class="desc">${p.desc}</div>
-          <div class="meta">${p.meta}</div>
-        </div>
-      `, 'layout-portrait');
-      i++;
-      continue;
-    }
-
-    if (p2 && p2.orient === 'h' && patIdx % 3 === 0) {
-      addPageData(`
-        <div class="duo-item">
-          <img src="${p.url}" alt="${p.title}">
-          <div class="caption"><div class="title">${p.title}</div><div class="meta">${p.meta}</div></div>
-        </div>
-        <div class="duo-item">
-          <img src="${p2.url}" alt="${p2.title}">
-          <div class="caption"><div class="title">${p2.title}</div><div class="meta">${p2.meta}</div></div>
-        </div>
-      `, 'layout-duo');
-      patIdx++;
-      i += 2;
-      continue;
-    }
-
-    const layout = layoutPatterns[patIdx % layoutPatterns.length];
-    patIdx++;
-
-    if (layout === 'bleed') {
-      addPageData(`
-        <img src="${p.url}" alt="${p.title}">
-        <div class="overlay"><div class="title">${p.title}</div><div class="meta">${p.meta}</div></div>
-      `, 'layout-bleed');
-    } else {
-      addPageData(`
-        <img src="${p.url}" alt="${p.title}">
-        <div class="text"><div class="title">${p.title}</div><div class="desc">${p.desc}</div><div class="meta">${p.meta}</div></div>
-      `, 'layout-white');
-    }
-    i++;
-  }
+  const btn = document.createElement('button');
+  btn.className = 'filter-btn';
+  btn.textContent = sec.title;
+  btn.dataset.filter = sec.id;
+  filtersEl.appendChild(btn);
 });
 
-addPageData(`
-  <div class="cover-title">Fin.</div>
-  <div class="cover-sub">${photos.length} photographs · Wayne</div>
-`, 'layout-cover');
-
-// --- Virtual rendering: only 3 DOM nodes ---
-const zine = document.getElementById('zine');
-const slots = [0, 1, 2].map(() => {
-  const div = document.createElement('div');
-  div.className = 'page';
-  zine.appendChild(div);
-  return div;
+filtersEl.addEventListener('click', (e) => {
+  const btn = e.target.closest('.filter-btn');
+  if (!btn) return;
+  activeFilter = btn.dataset.filter;
+  filtersEl.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
 });
 
-let current = 0;
-const total = pageData.length;
+function render() {
+  grid.innerHTML = '';
+  flatList = [];
+  let frameNum = 1;
 
-function renderSlot(slot, idx) {
-  if (idx < 0 || idx >= total) {
-    slot.className = 'page';
-    slot.innerHTML = '';
-    slot.style.visibility = 'hidden';
-    return;
-  }
-  const d = pageData[idx];
-  slot.className = 'page ' + d.layoutClass;
-  slot.innerHTML = d.html;
-  slot.style.visibility = 'visible';
+  sections.forEach(sec => {
+    const secPhotos = photos.filter(sec.filter);
+    if (secPhotos.length === 0) return;
+    if (activeFilter !== 'all' && activeFilter !== sec.id) return;
+
+    // Section header
+    if (activeFilter === 'all') {
+      const header = document.createElement('div');
+      header.className = 'section-header';
+      header.innerHTML = `<h2>${sec.title}</h2><div class="sub">${sec.sub}</div>`;
+      grid.appendChild(header);
+    }
+
+    secPhotos.forEach((p, idx) => {
+      const cell = document.createElement('div');
+      cell.className = 'cell' + (p.orient === 'v' ? ' portrait' : '');
+      const fn = String(frameNum).padStart(2, '0');
+      cell.innerHTML = `
+        <div class="frame">
+          <img src="${p.url}" alt="${p.title}" loading="lazy">
+          <div class="edge">
+            <span>${fn}</span>
+            <span>▶ ${fn}A</span>
+          </div>
+          <div class="info">
+            <div class="title">${p.title}</div>
+            <div class="meta">${p.meta}</div>
+          </div>
+        </div>
+      `;
+      const flatIdx = flatList.length;
+      cell.addEventListener('click', () => openLB(flatIdx));
+      grid.appendChild(cell);
+      flatList.push(p);
+      frameNum++;
+    });
+  });
+
+  document.getElementById('photo-count').textContent = `${flatList.length} frames`;
 }
 
-function showPage(idx, dir) {
-  current = idx;
-  // slot 0 = prev, 1 = current, 2 = next
-  renderSlot(slots[0], idx - 1);
-  renderSlot(slots[1], idx);
-  renderSlot(slots[2], idx + 1);
+render();
 
-  slots[0].classList.add('prev');
-  slots[1].classList.add('active');
-  slots[2].classList.remove('active', 'prev');
+// --- Lightbox ---
+let lbIdx = -1;
 
-  document.getElementById('counter').textContent = `${idx + 1} / ${total}`;
-  document.getElementById('progress').style.width = ((idx + 1) / total * 100) + '%';
+function openLB(idx) {
+  lbIdx = idx;
+  const p = flatList[idx];
+  document.getElementById('lb-img').src = p.url;
+  document.getElementById('lb-title').textContent = p.title;
+  document.getElementById('lb-desc').textContent = p.desc;
+  document.getElementById('lb-meta').textContent = p.meta;
+  document.getElementById('lightbox').classList.add('active');
+  document.body.style.overflow = 'hidden';
 }
 
-function go(dir) {
-  const next = current + dir;
-  if (next < 0 || next >= total) return;
-  showPage(next, dir);
+function closeLB() {
+  document.getElementById('lightbox').classList.remove('active');
+  document.body.style.overflow = '';
+  lbIdx = -1;
 }
 
-showPage(0, 1);
+function lbGo(dir) {
+  const next = lbIdx + dir;
+  if (next < 0 || next >= flatList.length) return;
+  openLB(next);
+}
 
-// Keyboard
+function handleLBClick(e) {
+  if (e.target.closest('.nav')) return;
+  closeLB();
+}
+
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); go(1); }
-  if (e.key === 'ArrowLeft') { e.preventDefault(); go(-1); }
+  if (lbIdx < 0) return;
+  if (e.key === 'Escape') closeLB();
+  if (e.key === 'ArrowRight') lbGo(1);
+  if (e.key === 'ArrowLeft') lbGo(-1);
 });
-
-// Touch swipe
-let touchStartX = 0;
-let touchStartY = 0;
-let touchMoved = false;
-document.addEventListener('touchstart', (e) => {
-  touchStartX = e.touches[0].clientX;
-  touchStartY = e.touches[0].clientY;
-  touchMoved = false;
-}, { passive: true });
-
-document.addEventListener('touchmove', (e) => {
-  touchMoved = true;
-}, { passive: true });
-
-document.addEventListener('touchend', (e) => {
-  const dx = e.changedTouches[0].clientX - touchStartX;
-  const dy = e.changedTouches[0].clientY - touchStartY;
-  if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
-    go(dx < 0 ? 1 : -1);
-  }
-});
-
-// Mouse wheel (desktop only)
-if (!('ontouchstart' in window)) {
-  let wheelTimer = null;
-  document.addEventListener('wheel', (e) => {
-    e.preventDefault();
-    if (wheelTimer) return;
-    wheelTimer = setTimeout(() => { wheelTimer = null; }, 400);
-    go(e.deltaY > 0 ? 1 : -1);
-  }, { passive: false });
-}
 </script>
 </body>
 </html>

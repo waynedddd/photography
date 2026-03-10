@@ -211,16 +211,17 @@
     }
 
     #lightbox .info .note {
+      position: fixed;
+      bottom: 30px;
+      left: 32px;
       font-family: 'Caveat', cursive;
       font-size: 17px;
       font-style: normal;
-      color: #999;
-      max-width: 520px;
-      margin: 16px auto 0;
-      line-height: 1.6;
-      padding: 0;
+      color: rgba(255,255,255,0.35);
+      max-width: 340px;
+      line-height: 1.5;
       text-align: left;
-      transform: rotate(-0.5deg);
+      transform: rotate(-2deg);
     }
 
     #lightbox .info .note::after {
@@ -228,7 +229,18 @@
       display: inline;
       margin-left: 8px;
       font-size: 15px;
-      color: #666;
+      color: rgba(255,255,255,0.2);
+    }
+
+    @media (max-width: 768px) {
+      #lightbox .info .note {
+        position: relative;
+        bottom: auto;
+        left: auto;
+        max-width: 85vw;
+        margin: 12px auto 0;
+        transform: rotate(-1deg);
+      }
     }
 
     #lightbox .info .note:empty {

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Wayne — Photography</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,349 +13,288 @@
     :root {
       --serif: 'Instrument Serif', Georgia, serif;
       --mono: 'Space Mono', monospace;
+      --desk: #2a2420;
+      --paper: #f5f0e8;
+      --shadow: rgba(0,0,0,0.4);
     }
 
     body {
-      background: #0a0a0a;
-      color: #fff;
-      font-family: var(--mono);
+      background: var(--desk);
       overflow: hidden;
-      height: 100vh;
-      -webkit-font-smoothing: antialiased;
+      cursor: grab;
+      font-family: var(--mono);
+      -webkit-user-select: none;
+      user-select: none;
+      touch-action: none;
     }
 
-    /* ─── Header ─── */
-    header {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 100;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1.5rem 2.5rem;
-    }
-
-    .logo {
-      font-family: var(--serif);
-      font-size: 1.2rem;
-      font-style: italic;
-    }
-
-    .header-links {
-      display: flex; gap: 2rem;
-    }
-
-    .header-links a {
-      color: #fff;
-      text-decoration: none;
-      font-size: 0.6rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      opacity: 0.3;
-      transition: opacity 0.3s;
-    }
-    .header-links a:hover { opacity: 1; }
-
-    /* ─── Coverflow Container ─── */
-    .coverflow-wrap {
+    /* subtle wood grain texture */
+    body::before {
+      content: '';
       position: fixed;
       inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      /* The dark gradient "stage" */
-      background:
-        radial-gradient(ellipse 120% 60% at 50% 55%, rgba(20,20,25,1) 0%, #0a0a0a 100%);
-    }
-
-    .coverflow {
-      position: relative;
-      width: 100%;
-      height: 480px;
-      perspective: 1200px;
-      perspective-origin: 50% 40%;
-    }
-
-    /* ─── Individual Cover ─── */
-    .cover {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform-style: preserve-3d;
-      transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), filter 0.4s, opacity 0.4s;
-      cursor: pointer;
-      will-change: transform, opacity, filter;
-    }
-
-    .cover.orient-v {
-      width: 42vh; height: 60vh;
-      margin-left: -21vh; margin-top: -33vh;
-    }
-    .cover.orient-h {
-      width: 80vh; height: auto;
-      aspect-ratio: 3/2;
-      margin-left: -40vh; margin-top: -27vh;
-    }
-
-    .cover-img-wrap {
-      width: 100%;
-      height: 100%;
-      position: relative;
-      border-radius: 4px;
-      overflow: hidden;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.7);
-      transition: box-shadow 0.5s;
-      background: #111;
-      backface-visibility: hidden;
-    }
-
-    .cover.active .cover-img-wrap {
-      box-shadow: 0 15px 60px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.05);
-    }
-
-    .cover-img-wrap img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      transition: opacity 0.5s;
-    }
-
-    /* Glass mode for side cards */
-    .cover-img-wrap.glass {
-      background: rgba(255,255,255,0.03);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255,255,255,0.05);
-    }
-    .cover-img-wrap.glass img {
-      opacity: 0;
-    }
-
-    /* ─── Reflection ─── */
-    .cover-reflection {
-      position: absolute;
-      top: 100%;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      border-radius: 4px;
-      overflow: hidden;
-      transform: scaleY(-1);
-      -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, transparent 35%);
-      mask-image: linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, transparent 35%);
+      background: 
+        repeating-linear-gradient(
+          90deg,
+          transparent,
+          transparent 3px,
+          rgba(255,255,255,0.01) 3px,
+          rgba(255,255,255,0.01) 4px
+        );
       pointer-events: none;
+      z-index: 0;
     }
 
-    .cover-reflection img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      filter: blur(1px) brightness(0.6);
-    }
-
-    /* ─── Floor gradient ─── */
-    .floor {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 35%;
-      background: linear-gradient(to top, #0a0a0a 0%, transparent 100%);
-      z-index: 2;
-      pointer-events: none;
-    }
-
-    /* ─── Photo Info ─── */
-    .info {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      z-index: 10;
-      text-align: center;
-      padding: 0 2rem 5rem;
-      pointer-events: none;
-    }
-
-    .info-title {
-      font-family: var(--serif);
-      font-size: clamp(1.8rem, 3.5vw, 2.8rem);
-      font-style: italic;
-      font-weight: 400;
-      opacity: 0;
-      transform: translateY(12px);
-      transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
-    }
-
-    .info-title.show {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .info-meta {
-      font-size: 0.6rem;
-      letter-spacing: 0.1em;
-      color: rgba(255,255,255,0.3);
-      margin-top: 0.6rem;
-      opacity: 0;
-      transition: opacity 0.5s 0.1s;
-    }
-    .info-meta.show { opacity: 1; }
-
-    .info-desc {
-      font-family: var(--serif);
-      font-size: 0.85rem;
-      color: rgba(255,255,255,0.35);
-      margin-top: 0.6rem;
-      max-width: 400px;
-      margin-left: auto;
-      margin-right: auto;
-      line-height: 1.6;
-      font-weight: 400;
-      opacity: 0;
-      transition: opacity 0.5s 0.15s;
-    }
-    .info-desc.show { opacity: 1; }
-
-    /* ─── Counter ─── */
-    .counter {
-      position: fixed;
-      top: 50%;
-      right: 2.5rem;
-      transform: translateY(-50%);
-      z-index: 10;
-      font-size: 0.55rem;
-      letter-spacing: 0.15em;
-      color: rgba(255,255,255,0.2);
-      writing-mode: vertical-rl;
-    }
-
-    /* ─── Scrollbar / Track ─── */
-    .track-wrap {
-      position: fixed;
-      bottom: 2.5rem;
-      left: 50%;
-      transform: translateX(-50%);
-      width: min(500px, 80vw);
-      z-index: 10;
-      pointer-events: auto;
-    }
-
-    .track {
-      width: 100%;
-      height: 2px;
-      background: rgba(255,255,255,0.08);
-      border-radius: 1px;
-      position: relative;
-      cursor: pointer;
-    }
-
-    .track-ticks {
+    #canvas {
       position: absolute;
       top: 0;
       left: 0;
-      right: 0;
+      will-change: transform;
+    }
+
+    .photo {
+      position: absolute;
+      background: var(--paper);
+      padding: 12px 12px 40px 12px;
+      box-shadow: 
+        0 2px 8px var(--shadow),
+        0 0 1px rgba(0,0,0,0.2);
+      cursor: pointer;
+      transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+                  box-shadow 0.35s ease,
+                  z-index 0s;
+      transform-style: preserve-3d;
+      perspective: 800px;
+    }
+
+    .photo:hover {
+      box-shadow: 
+        0 12px 40px rgba(0,0,0,0.5),
+        0 0 1px rgba(0,0,0,0.2);
+      z-index: 9000 !important;
+    }
+
+    .photo .front,
+    .photo .back {
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+
+    .photo .front {
+      display: block;
+    }
+
+    .photo .back {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
       height: 100%;
+      background: var(--paper);
+      transform: rotateY(180deg);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .photo.flipped {
+      transform: rotateY(180deg) !important;
+    }
+
+    .photo img {
+      display: block;
+      width: 100%;
+      height: auto;
       pointer-events: none;
     }
 
-    .track-tick {
+    .photo .label {
       position: absolute;
-      top: -3px;
-      width: 1px;
-      height: 8px;
-      background: rgba(255,255,255,0.15);
-    }
-
-    .track-tick-label {
-      position: absolute;
-      top: 12px;
-      transform: translateX(-50%);
+      bottom: 10px;
+      left: 12px;
+      right: 12px;
       font-family: var(--mono);
-      font-size: 0.5rem;
-      color: rgba(255,255,255,0.2);
+      font-size: 9px;
+      color: #999;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
       white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    .track-thumb {
-      position: absolute;
-      top: -4px;
-      height: 10px;
-      width: 10px;
-      background: rgba(255,255,255,0.5);
-      border-radius: 50%;
-      transition: left 0.5s cubic-bezier(0.25, 1, 0.5, 1), transform 0.2s;
-      cursor: grab;
-    }
-    .track-thumb:hover { transform: scale(1.5); }
-    .track-thumb:active { cursor: grabbing; }
-
-    .track-fill {
-      height: 100%;
-      background: rgba(255,255,255,0.25);
-      border-radius: 1px;
-      transition: width 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+    .back .title {
+      font-family: var(--serif);
+      font-size: 22px;
+      color: #1a1a1a;
+      margin-bottom: 8px;
+      font-style: italic;
     }
 
-    /* ─── Responsive ─── */
-    @media (max-width: 768px) {
-      header { padding: 1rem 1.5rem; }
-      .header-links { display: none; }
-      .cover.orient-v { width: 55vw; height: 65vh; margin-left: -27.5vw; margin-top: -35vh; }
-      .cover.orient-h { width: 85vw; height: auto; aspect-ratio: 3/2; margin-left: -42.5vw; margin-top: calc(-85vw / 3); }
-      .coverflow { height: 400px; }
-      .info { padding: 0 1.5rem 2.5rem; }
-      .info-desc { display: none; }
-      .counter { display: none; }
-      .track-tick-label { font-size: 0.45rem; }
+    .back .meta {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: #888;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
     }
 
-    @media (max-width: 480px) {
-      .cover.orient-v { width: 65vw; height: 60vh; margin-left: -32.5vw; margin-top: -33vh; }
-      .cover.orient-h { width: 90vw; height: auto; aspect-ratio: 3/2; margin-left: -45vw; margin-top: calc(-90vw / 3); }
-      .info-title { font-size: 1.5rem; }
+    .back .desc {
+      font-family: var(--serif);
+      font-size: 14px;
+      color: #444;
+      line-height: 1.6;
+      max-width: 200px;
     }
 
-    /* ─── Fade in ─── */
-    .coverflow-wrap, header, .info, .counter, .track-wrap {
+    /* Lightbox */
+    #lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.9);
+      z-index: 10000;
+      justify-content: center;
+      align-items: center;
+      cursor: zoom-out;
       opacity: 0;
-      animation: pageIn 1s 0.2s forwards;
+      transition: opacity 0.3s ease;
     }
-    @keyframes pageIn { to { opacity: 1; } }
+
+    #lightbox.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    #lightbox img {
+      max-width: 90vw;
+      max-height: 90vh;
+      object-fit: contain;
+      box-shadow: 0 0 60px rgba(0,0,0,0.5);
+    }
+
+    #lightbox .info {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      color: #fff;
+    }
+
+    #lightbox .info .title {
+      font-family: var(--serif);
+      font-size: 28px;
+      font-style: italic;
+      margin-bottom: 6px;
+    }
+
+    #lightbox .info .meta {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: #888;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    #lightbox .info .desc {
+      font-family: var(--serif);
+      font-size: 15px;
+      color: #aaa;
+      max-width: 500px;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
+
+    /* Minimap */
+    #minimap {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 160px;
+      height: 100px;
+      background: rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 4px;
+      z-index: 9999;
+      overflow: hidden;
+    }
+
+    #minimap .viewport {
+      position: absolute;
+      border: 1px solid rgba(255,255,255,0.4);
+      background: rgba(255,255,255,0.05);
+      pointer-events: none;
+    }
+
+    #minimap .dot {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: rgba(255,255,255,0.3);
+      border-radius: 50%;
+    }
+
+    /* Hint */
+    #hint {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: var(--mono);
+      font-size: 12px;
+      color: rgba(255,255,255,0.3);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      pointer-events: none;
+      transition: opacity 1s ease;
+      z-index: 9998;
+    }
+
+    @media (max-width: 768px) {
+      .photo {
+        padding: 8px 8px 30px 8px;
+      }
+      .photo .label {
+        font-size: 7px;
+        bottom: 8px;
+        left: 8px;
+      }
+      #minimap {
+        width: 100px;
+        height: 62px;
+        bottom: 12px;
+        right: 12px;
+      }
+      #hint {
+        font-size: 10px;
+      }
+    }
   </style>
 </head>
 <body>
 
-<header>
-  <div class="logo">W.</div>
-  <div class="header-links">
-    <a href="mailto:wayne@example.com">Contact</a>
-    <a href="https://github.com/waynedddd" target="_blank">GitHub</a>
-  </div>
-</header>
+<div id="canvas"></div>
 
-<div class="coverflow-wrap">
-  <div class="coverflow" id="coverflow"></div>
-</div>
-
-<div class="floor"></div>
-
-<div class="info">
-  <div class="info-title" id="infoTitle">Silent Peak</div>
-  <div class="info-meta" id="infoMeta">Yunnan, 2025 · Fujifilm X-T5</div>
-  <div class="info-desc" id="infoDesc">Morning mist clings to the mountain ridges like memory.</div>
-</div>
-
-<div class="counter" id="counter">01 — 12</div>
-
-<div class="track-wrap">
-  <div class="track" id="track">
-    <div class="track-fill" id="trackFill"></div>
-    <div class="track-thumb" id="trackThumb"></div>
-    <div class="track-ticks"></div>
+<div id="lightbox" onclick="closeLightbox()">
+  <img id="lb-img" src="" alt="">
+  <div class="info">
+    <div class="title" id="lb-title"></div>
+    <div class="meta" id="lb-meta"></div>
+    <div class="desc" id="lb-desc"></div>
   </div>
 </div>
+
+<div id="minimap">
+  <div class="viewport" id="mm-viewport"></div>
+</div>
+
+<div id="hint">drag to explore · click to view</div>
 
 <script>
 const photos = [
@@ -371,7 +310,6 @@ const photos = [
   { url: 'photos/web/DSC01233_SnapseedCopy.jpg', title: 'Light Boxes', meta: 'Haikou, 2025 · Sony', desc: 'Two silhouettes pass the glowing billboards at night.', orient: 'h', date: '2025-02' },
   { url: 'photos/web/IMG_1514.jpg', title: 'Red Stools', meta: 'Haikou, 2025 · iPhone', desc: 'Plastic chairs, old walls, and a lunch crowd that never left.', orient: 'v', date: '2025-02' },
   { url: 'photos/web/IMG_1495.jpg', title: 'Cable Bridge', meta: 'Haikou, 2025 · iPhone', desc: 'The bridge at dusk, cables fanning out like a harp.', orient: 'h', date: '2025-02' },
-  // 2025-01 Japan
   // Kyoto autumn
   { url: 'photos/web/DSCF9769.jpg', title: 'Nol', meta: 'Kyoto, 2024 · Fujifilm', desc: 'A noren curtain glows softly. The lantern says welcome without words.', orient: 'h', date: '2024-11' },
   { url: 'photos/web/DSCF9700.jpg', title: 'Kyusu', meta: 'Kyoto, 2024 · Fujifilm', desc: 'A white teapot on wood. Nothing else needed.', orient: 'h', date: '2024-11' },
@@ -391,7 +329,7 @@ const photos = [
   { url: 'photos/web/DSCF6446.jpg', title: 'Karakoram', meta: 'Pamir, 2024 · Fujifilm', desc: 'A road leads straight to Muztagh Ata. Snow peak, barren land, open sky.', orient: 'h', date: '2024-08' },
   { url: 'photos/web/DSCF6242.jpg', title: 'Blue Door', meta: 'Kashgar, 2024 · Fujifilm', desc: 'She draws on her tablet behind blue doors. A red carpet underneath.', orient: 'v', date: '2024-08' },
   { url: 'photos/web/DSCF6160.jpg', title: 'Balcony', meta: 'Kashgar, 2024 · Fujifilm', desc: 'Blue columns, patterned curtains, a man on the phone. Old city, same routine.', orient: 'h', date: '2024-08' },
-  // Japan summer
+  // Japan & Korea
   { url: 'photos/web/DSCF5736.jpg', title: 'Suwon', meta: 'Suwon, 2024 · Fujifilm', desc: 'The fortress wall curves through the city at dusk. Mountains behind mountains.', orient: 'h', date: '2024-09' },
   { url: 'photos/web/DSCF5054.jpg', title: 'Wheel', meta: 'Japan, 2024 · Fujifilm', desc: 'A bicycle parked against old wood. Nobody is in a hurry.', orient: 'v', date: '2024-07' },
   { url: 'photos/web/DSCF4830.jpg', title: 'Cat Nap', meta: 'Japan, 2024 · Fujifilm', desc: 'Orange and white fur curled in a ball. The star of the shop.', orient: 'h', date: '2024-07' },
@@ -417,7 +355,6 @@ const photos = [
   { url: 'photos/web/DSCF1016.jpg', title: 'Folk Craft', meta: 'Otaru, 2024 · Fujifilm', desc: 'A kilim rug banner on a shutter. Two people walk past in heavy snow. December 3.', orient: 'h', date: '2024-12' },
   { url: 'photos/web/IMG_5783.jpg', title: 'Tunnel', meta: 'Japan, 2024 · iPhone', desc: 'A man walks out of a dark tunnel into open farmland. Light at the end.', orient: 'h', date: '2024-03' },
   { url: 'photos/web/IMG_2600.jpg', title: 'Wetland', meta: 'Tibet, 2024 · iPhone', desc: 'Mountains reflected in marsh water. Golden grass stretches to the horizon.', orient: 'h', date: '2024-10' },
-
   // 2025-01
   { url: 'photos/web/DSCF4749.jpg', title: 'Intersection', meta: 'Tokyo, 2025 · Fujifilm', desc: 'A delivery rider threads between a bus and a taxi.', orient: 'h', date: '2025-01' },
   { url: 'photos/web/DSCF4527.jpg', title: 'The Cook', meta: 'Japan, 2025 · Fujifilm', desc: 'Wooden bowls, hung spoons, and a quiet man behind the counter.', orient: 'h', date: '2025-01' },
@@ -431,227 +368,228 @@ const photos = [
   { url: 'photos/web/DSC00208.jpg', title: 'Night Walk', meta: 'China, 2024 · Sony', desc: 'Street lights draw long shadows. The city is still awake.', orient: 'h', date: '2024-12' }
 ];
 
-const container = document.getElementById('coverflow');
-const total = photos.length;
-let current = 0;
+// --- Layout: scatter photos on a large canvas ---
+const PHOTO_W_H = 260;  // horizontal photo width
+const PHOTO_W_V = 180;  // vertical photo width
+const COLS = Math.ceil(Math.sqrt(photos.length * 1.5));
+const CELL = 360;
+const CANVAS_W = COLS * CELL + 400;
+const CANVAS_H = Math.ceil(photos.length / COLS) * CELL + 400;
+const canvas = document.getElementById('canvas');
+canvas.style.width = CANVAS_W + 'px';
+canvas.style.height = CANVAS_H + 'px';
 
-// ─── Build covers ───
-photos.forEach((p, i) => {
+// Seeded random for consistent layout
+function seededRandom(seed) {
+  let s = seed;
+  return function() {
+    s = (s * 16807 + 0) % 2147483647;
+    return s / 2147483647;
+  };
+}
+const rand = seededRandom(42);
+
+// Shuffle photos for visual variety
+const shuffled = [...photos].sort(() => rand() - 0.5);
+
+shuffled.forEach((p, i) => {
+  const col = i % COLS;
+  const row = Math.floor(i / COLS);
+  const w = p.orient === 'v' ? PHOTO_W_V : PHOTO_W_H;
+  const rotation = (rand() - 0.5) * 24; // ±12°
+  const offsetX = (rand() - 0.5) * 80;
+  const offsetY = (rand() - 0.5) * 80;
+  const x = 200 + col * CELL + offsetX;
+  const y = 200 + row * CELL + offsetY;
+  const z = Math.floor(rand() * 100);
+
   const el = document.createElement('div');
-  el.className = 'cover orient-' + (p.orient || 'v');
-  el.dataset.index = i;
+  el.className = 'photo';
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+  el.style.width = w + 'px';
+  el.style.zIndex = z;
+  el.style.transform = `rotate(${rotation}deg)`;
+  el.dataset.rotation = rotation;
+  el.dataset.idx = i;
+
   el.innerHTML = `
-    <div class="cover-img-wrap">
-      <img src="${p.url}" alt="${p.title}" loading="lazy" draggable="false">
-    </div>
-    <div class="cover-reflection">
-      <img src="${p.url}" alt="" loading="lazy" draggable="false">
+    <div class="front">
+      <img src="${p.url}" alt="${p.title}" loading="lazy">
+      <div class="label">${p.title} — ${p.meta}</div>
     </div>
   `;
-  el.addEventListener('click', () => goTo(i));
-  container.appendChild(el);
-});
 
-const covers = document.querySelectorAll('.cover');
-
-// ─── Core Coverflow layout ───
-// Center cover: face-on, z-index high
-// Left covers: rotateY(+55deg), shifted left, stacked
-// Right covers: rotateY(-55deg), shifted right, stacked
-const TILT = 75;          // degrees
-const SPACING = 28;       // px between stacked covers (tight stack)
-const CENTER_GAP = 520;   // px gap — push sides to page edges
-const Z_STEP = 40;        // z offset per step
-
-function layout() {
-  covers.forEach((cover, i) => {
-    const offset = i - current;
-    let tx, ry, tz, zi;
-    const absOff = Math.abs(offset);
-
-    if (offset === 0) {
-      tx = 0; ry = 0; tz = 0;
-      zi = total;
-      // Restore original orientation class
-      cover.style.width = '';
-      cover.style.height = '';
-      cover.style.marginLeft = '';
-      cover.style.marginTop = '';
-    } else {
-      // Side cards: same height as center, fixed width
-      const isMobile = window.innerWidth <= 768;
-      const isSmall = window.innerWidth <= 480;
-      if (isMobile) {
-        // Match landscape photo height: width * 2/3
-        const landW = isSmall ? 90 : 85; // vw
-        const sideH = `calc(${landW}vw / 1.5)`;
-        cover.style.height = sideH;
-        cover.style.width = isSmall ? '100px' : '120px';
-        cover.style.marginLeft = isSmall ? '-50px' : '-60px';
-        cover.style.marginTop = `calc(-${landW}vw / 3)`;
-      } else {
-        cover.style.height = '60vh';
-        cover.style.width = '220px';
-        cover.style.marginLeft = '-110px';
-        cover.style.marginTop = '-33vh';
-      }
-
-      const gap = window.innerWidth * (isMobile ? 0.42 : 0.3);
-
-      if (offset < 0) {
-        tx = -gap + (offset + 1) * SPACING;
-        ry = TILT;
-        tz = 0;
-        zi = total + offset;
-      } else {
-        tx = gap + (offset - 1) * SPACING;
-        ry = -TILT;
-        tz = 0;
-        zi = total - offset;
-      }
-    }
-
-    cover.style.transform = `translateX(${tx}px) translateZ(${tz}px) rotateY(${ry}deg)`;
-    cover.style.zIndex = zi;
-
-    // Show up to 6 on each side (3 on mobile)
-    const maxSide = window.innerWidth <= 768 ? 3 : 6;
-    if (absOff > maxSide) {
-      cover.style.opacity = '0';
-    } else {
-      cover.style.opacity = '1';
-    }
-
-    // Toggle glass mode for non-center cards
-    const imgWrap = cover.querySelector('.cover-img-wrap');
-    const reflection = cover.querySelector('.cover-reflection');
-    if (offset === 0) {
-      imgWrap.classList.remove('glass');
-      if (reflection) reflection.style.display = '';
-      cover.style.filter = 'brightness(1)';
-    } else {
-      imgWrap.classList.add('glass');
-      if (reflection) reflection.style.display = 'none';
-      cover.style.filter = 'brightness(1)';
-    }
-
-    cover.classList.toggle('active', offset === 0);
+  el.addEventListener('click', (e) => {
+    e.stopPropagation();
+    openLightbox(photos.indexOf(p));
   });
 
-  // Update info
-  const p = photos[current];
-  const title = document.getElementById('infoTitle');
-  const meta = document.getElementById('infoMeta');
-  const desc = document.getElementById('infoDesc');
+  // Bring to front on hover
+  el.addEventListener('mouseenter', () => {
+    el.style.zIndex = 9000;
+    el.style.transform = `rotate(0deg) scale(1.08)`;
+  });
+  el.addEventListener('mouseleave', () => {
+    el.style.zIndex = z;
+    el.style.transform = `rotate(${rotation}deg)`;
+  });
 
-  title.classList.remove('show');
-  meta.classList.remove('show');
-  desc.classList.remove('show');
-
-  setTimeout(() => {
-    title.textContent = p.title;
-    meta.textContent = p.meta;
-    desc.textContent = p.desc;
-    title.classList.add('show');
-    meta.classList.add('show');
-    desc.classList.add('show');
-  }, 150);
-
-  // Counter
-  document.getElementById('counter').textContent =
-    `${String(current + 1).padStart(2, '0')} — ${String(total).padStart(2, '0')}`;
-
-  // Track
-  const pct = current / (total - 1);
-  document.getElementById('trackFill').style.width = `${pct * 100}%`;
-  document.getElementById('trackThumb').style.left = `calc(${pct * 100}% - 5px)`;
-}
-
-function goTo(i) {
-  current = Math.max(0, Math.min(total - 1, i));
-  layout();
-}
-
-// ─── Controls ───
-
-// Keyboard
-document.addEventListener('keydown', e => {
-  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') goTo(current - 1);
-  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') goTo(current + 1);
+  canvas.appendChild(el);
 });
 
-// Wheel
-let wheelCd = false;
-document.addEventListener('wheel', e => {
-  if (wheelCd) return;
-  wheelCd = true;
-  setTimeout(() => wheelCd = false, 250);
-  e.deltaY > 0 || e.deltaX > 0 ? goTo(current + 1) : goTo(current - 1);
+// --- Pan (drag to explore) ---
+let isPanning = false;
+let startX, startY, panX = 0, panY = 0;
+
+// Center the view initially
+const vw = window.innerWidth;
+const vh = window.innerHeight;
+panX = -(CANVAS_W / 2 - vw / 2);
+panY = -(CANVAS_H / 2 - vh / 2);
+canvas.style.transform = `translate(${panX}px, ${panY}px)`;
+
+document.body.addEventListener('pointerdown', (e) => {
+  if (e.target.closest('.photo') || e.target.closest('#lightbox') || e.target.closest('#minimap')) return;
+  isPanning = true;
+  startX = e.clientX - panX;
+  startY = e.clientY - panY;
+  document.body.style.cursor = 'grabbing';
+});
+
+document.body.addEventListener('pointermove', (e) => {
+  if (!isPanning) return;
+  panX = e.clientX - startX;
+  panY = e.clientY - startY;
+  canvas.style.transform = `translate(${panX}px, ${panY}px)`;
+  updateMinimap();
+
+  // Hide hint on first drag
+  const hint = document.getElementById('hint');
+  if (hint) hint.style.opacity = '0';
+});
+
+document.body.addEventListener('pointerup', () => {
+  isPanning = false;
+  document.body.style.cursor = 'grab';
+});
+
+// Touch: also allow dragging from photos
+let touchStart = null;
+document.body.addEventListener('touchstart', (e) => {
+  if (e.target.closest('#lightbox') || e.target.closest('#minimap')) return;
+  if (e.touches.length === 1) {
+    touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY, px: panX, py: panY };
+  }
 }, { passive: true });
 
-// Touch swipe
-let tx0 = 0;
-document.addEventListener('touchstart', e => { tx0 = e.touches[0].clientX; }, { passive: true });
-document.addEventListener('touchend', e => {
-  const dx = e.changedTouches[0].clientX - tx0;
-  if (Math.abs(dx) > 40) dx > 0 ? goTo(current - 1) : goTo(current + 1);
+document.body.addEventListener('touchmove', (e) => {
+  if (!touchStart || e.touches.length !== 1) return;
+  const dx = e.touches[0].clientX - touchStart.x;
+  const dy = e.touches[0].clientY - touchStart.y;
+  // If moved enough, it's a pan not a tap
+  if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+    touchStart.moved = true;
+    panX = touchStart.px + dx;
+    panY = touchStart.py + dy;
+    canvas.style.transform = `translate(${panX}px, ${panY}px)`;
+    updateMinimap();
+    const hint = document.getElementById('hint');
+    if (hint) hint.style.opacity = '0';
+  }
 }, { passive: true });
 
-// Track click
-document.getElementById('track').addEventListener('click', e => {
-  const rect = e.currentTarget.getBoundingClientRect();
-  const pct = (e.clientX - rect.left) / rect.width;
-  goTo(Math.round(pct * (total - 1)));
-});
-
-// Track drag
-let dragging = false;
-const thumb = document.getElementById('trackThumb');
-thumb.addEventListener('mousedown', e => { dragging = true; e.preventDefault(); });
-document.addEventListener('mousemove', e => {
-  if (!dragging) return;
-  const rect = document.getElementById('track').getBoundingClientRect();
-  const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-  goTo(Math.round(pct * (total - 1)));
-});
-document.addEventListener('mouseup', () => { dragging = false; });
-
-// ─── Year ticks on track ───
-function buildTicks() {
-  const ticksEl = document.querySelector('.track-ticks') || (() => {
-    const el = document.createElement('div');
-    el.className = 'track-ticks';
-    document.getElementById('track').appendChild(el);
-    return el;
-  })();
-  ticksEl.innerHTML = '';
-
-  // Find where each year starts
-  const seen = {};
-  photos.forEach((p, i) => {
-    const year = p.date.split('-')[0];
-    if (!seen[year]) {
-      seen[year] = i;
+document.body.addEventListener('touchend', (e) => {
+  if (touchStart && !touchStart.moved) {
+    // It was a tap — find the photo under the tap
+    const el = document.elementFromPoint(touchStart.x, touchStart.y);
+    const photoEl = el && el.closest('.photo');
+    if (photoEl) {
+      const idx = parseInt(photoEl.dataset.idx);
+      openLightbox(photos.indexOf(shuffled[idx]));
     }
-  });
+  }
+  touchStart = null;
+});
 
-  Object.entries(seen).forEach(([year, idx]) => {
-    const pct = idx / (photos.length - 1) * 100;
-    const tick = document.createElement('div');
-    tick.className = 'track-tick';
-    tick.style.left = pct + '%';
-    tick.innerHTML = `<span class="track-tick-label">${year}</span>`;
-    ticksEl.appendChild(tick);
-  });
+// --- Lightbox ---
+let currentLB = -1;
+
+function openLightbox(idx) {
+  currentLB = idx;
+  const p = photos[idx];
+  const lb = document.getElementById('lightbox');
+  document.getElementById('lb-img').src = p.url;
+  document.getElementById('lb-title').textContent = p.title;
+  document.getElementById('lb-meta').textContent = p.meta;
+  document.getElementById('lb-desc').textContent = p.desc;
+  lb.style.display = 'flex';
+  requestAnimationFrame(() => lb.classList.add('active'));
 }
-buildTicks();
 
-// Recalc on resize
-window.addEventListener('resize', () => layout());
+function closeLightbox() {
+  const lb = document.getElementById('lightbox');
+  lb.classList.remove('active');
+  setTimeout(() => { lb.style.display = 'none'; }, 300);
+  currentLB = -1;
+}
 
-// ─── Init ───
-layout();
+// Arrow keys in lightbox
+document.addEventListener('keydown', (e) => {
+  if (currentLB < 0) return;
+  if (e.key === 'Escape') closeLightbox();
+  if (e.key === 'ArrowRight') {
+    openLightbox((currentLB + 1) % photos.length);
+  }
+  if (e.key === 'ArrowLeft') {
+    openLightbox((currentLB - 1 + photos.length) % photos.length);
+  }
+});
+
+// --- Minimap ---
+function updateMinimap() {
+  const vp = document.getElementById('mm-viewport');
+  const mm = document.getElementById('minimap');
+  const mmW = mm.offsetWidth;
+  const mmH = mm.offsetHeight;
+  const scaleX = mmW / CANVAS_W;
+  const scaleY = mmH / CANVAS_H;
+
+  const vpW = vw * scaleX;
+  const vpH = vh * scaleY;
+  const vpX = -panX * scaleX;
+  const vpY = -panY * scaleY;
+
+  vp.style.left = vpX + 'px';
+  vp.style.top = vpY + 'px';
+  vp.style.width = vpW + 'px';
+  vp.style.height = vpH + 'px';
+}
+
+// Draw dots on minimap
+function initMinimap() {
+  const mm = document.getElementById('minimap');
+  const scaleX = mm.offsetWidth / CANVAS_W;
+  const scaleY = mm.offsetHeight / CANVAS_H;
+
+  document.querySelectorAll('.photo').forEach(el => {
+    const dot = document.createElement('div');
+    dot.className = 'dot';
+    dot.style.left = (parseFloat(el.style.left) + 50) * scaleX + 'px';
+    dot.style.top = (parseFloat(el.style.top) + 30) * scaleY + 'px';
+    mm.appendChild(dot);
+  });
+
+  updateMinimap();
+}
+
+// Fade hint after 4s
+setTimeout(() => {
+  const hint = document.getElementById('hint');
+  if (hint) hint.style.opacity = '0';
+}, 4000);
+
+initMinimap();
 </script>
-
 </body>
 </html>

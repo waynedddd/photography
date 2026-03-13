@@ -812,6 +812,20 @@ let flyClone = null; // the flying clone element
 const EASE_OUT = 'cubic-bezier(0.22, 1, 0.36, 1)';
 const FLY_DURATION = 450;
 
+// Navigation list: shuffled order, respecting active filter
+function getNavList() {
+  return shuffled.filter(p => matchesFilter(p));
+}
+
+function navNext(dir) {
+  const nav = getNavList();
+  const current = photos[currentLB];
+  const ci = nav.indexOf(current);
+  if (ci < 0) return currentLB;
+  const ni = (ci + dir + nav.length) % nav.length;
+  return photos.indexOf(nav[ni]);
+}
+
 function getPhotoElByIdx(idx) {
   const els = document.querySelectorAll('.photo');
   for (const el of els) {
@@ -1014,8 +1028,8 @@ cardEl.addEventListener('touchend', (e) => {
   const dx = e.changedTouches[0].clientX - cardTouchX;
   if (Math.abs(dx) > 50) {
     e.preventDefault();
-    if (dx < 0) openLightbox((currentLB + 1) % photos.length, 'left');
-    else openLightbox((currentLB - 1 + photos.length) % photos.length, 'right');
+    if (dx < 0) openLightbox(navNext(1), 'left');
+    else openLightbox(navNext(-1), 'right');
   }
 });
 
@@ -1107,8 +1121,8 @@ function closeLightbox() {
 document.addEventListener('keydown', (e) => {
   if (currentLB < 0) return;
   if (e.key === 'Escape') closeLightbox();
-  if (e.key === 'ArrowRight') openLightbox((currentLB + 1) % photos.length, 'left');
-  if (e.key === 'ArrowLeft') openLightbox((currentLB - 1 + photos.length) % photos.length, 'right');
+  if (e.key === 'ArrowRight') openLightbox(navNext(1), 'left');
+  if (e.key === 'ArrowLeft') openLightbox(navNext(-1), 'right');
 });
 
 // Lightbox backdrop swipe (mobile)
@@ -1119,8 +1133,8 @@ lbEl.addEventListener('touchend', (e) => {
   if (e.target.closest('#lb-card')) return;
   const dx = e.changedTouches[0].clientX - lbTouchX;
   if (Math.abs(dx) > 50) {
-    if (dx < 0) openLightbox((currentLB + 1) % photos.length, 'left');
-    else openLightbox((currentLB - 1 + photos.length) % photos.length, 'right');
+    if (dx < 0) openLightbox(navNext(1), 'left');
+    else openLightbox(navNext(-1), 'right');
   } else if (Math.abs(dx) < 10) {
     closeLightbox();
   }

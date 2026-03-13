@@ -821,37 +821,22 @@ function getPhotoElByIdx(idx) {
 }
 
 function createFlyClone(photoEl) {
-  // Clone the photo card, fix it to viewport
   const rect = photoEl.getBoundingClientRect();
   const clone = photoEl.cloneNode(true);
   clone.style.position = 'fixed';
   clone.style.left = rect.left + 'px';
   clone.style.top = rect.top + 'px';
   clone.style.width = rect.width + 'px';
+  clone.style.height = rect.height + 'px';
   clone.style.margin = '0';
   clone.style.zIndex = '10001';
   clone.style.pointerEvents = 'none';
   clone.style.transition = 'none';
-  // Remove hover effects
   clone.style.boxShadow = '0 2px 8px rgba(0,0,0,0.4), 0 0 1px rgba(0,0,0,0.2)';
-  // Hide label during flight
   const label = clone.querySelector('.label');
-  if (label) label.style.display = 'none';
+  if (label) label.style.opacity = '1';
   document.body.appendChild(clone);
   return { clone, rect };
-}
-
-function getLightboxImgTarget() {
-  // Calculate where the lightbox image will be (center of viewport)
-  const lbImg = document.getElementById('lb-img');
-  const card = document.getElementById('lb-card');
-  // We need the lightbox open briefly to measure, or estimate
-  // Estimate: centered, max 88vw x 65vh
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-  const maxW = vw * 0.88;
-  const maxH = vh * 0.65;
-  return { maxW, maxH, cx: vw / 2, cy: vh / 2 };
 }
 
 function openLightbox(idx, direction, clickedEl) {
@@ -910,73 +895,65 @@ function openLightbox(idx, direction, clickedEl) {
 
   if (sourcePhotoEl) {
     isAnimating = true;
-    const { clone, rect } = createFlyClone(sourcePhotoEl);
-    flyClone = clone;
 
-    // Hide original
-    sourcePhotoEl.style.visibility = 'hidden';
-
-    // Calculate target: center of screen, scaled up
-    const target = getLightboxImgTarget();
-    // Scale factor: how much bigger the target is than source
-    const scale = Math.min(target.maxW / rect.width, target.maxH / rect.height, 3);
-    const targetW = rect.width * scale;
-    const targetH = rect.height * scale;
-    const targetX = target.cx - targetW / 2;
-    const targetY = target.cy - targetH / 2;
-
-    // Get source rotation
-    const rot = parseFloat(sourcePhotoEl.dataset.rotation) || 0;
-
-    // Hide card and info BEFORE showing lightbox to prevent flash
+    // 1. Hide card+info, open lightbox to measure actual card position
     card.style.opacity = '0';
     infoEl.style.opacity = '0';
-
-    // Fade in backdrop
-    lb.classList.add('open');
     backdrop.style.opacity = '0';
+    lb.classList.add('open');
+
+    // 2. Measure actual card rect after layout
+    const cardRect = card.getBoundingClientRect();
+
+    // 3. Create clone at source position
+    const { clone, rect: srcRect } = createFlyClone(sourcePhotoEl);
+    flyClone = clone;
+    sourcePhotoEl.style.visibility = 'hidden';
+
+    const rot = parseFloat(sourcePhotoEl.dataset.rotation) || 0;
+    const srcPadding = getComputedStyle(sourcePhotoEl).padding;
+
+    // 4. Backdrop fade in
     backdrop.animate([
       { opacity: 0 }, { opacity: 1 }
     ], { duration: FLY_DURATION, easing: 'ease-out', fill: 'forwards' });
 
-    // Animate clone from source to target
-    // Also shrink padding and fade background to seamlessly match lightbox
+    // 5. Fly clone from source to exact card position
     clone.animate([
       {
-        left: rect.left + 'px',
-        top: rect.top + 'px',
-        width: rect.width + 'px',
+        left: srcRect.left + 'px',
+        top: srcRect.top + 'px',
+        width: srcRect.width + 'px',
+        height: srcRect.height + 'px',
         transform: `rotate(${rot}deg)`,
         boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
-        padding: getComputedStyle(sourcePhotoEl).padding,
-        backgroundColor: 'var(--paper)',
+        padding: srcPadding,
+        backgroundColor: '#f5f0e8',
       },
       {
-        left: targetX + 'px',
-        top: targetY + 'px',
-        width: targetW + 'px',
+        left: cardRect.left + 'px',
+        top: cardRect.top + 'px',
+        width: cardRect.width + 'px',
+        height: cardRect.height + 'px',
         transform: 'rotate(0deg)',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
-        padding: '0px 0px 0px 0px',
+        boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
+        padding: '0px',
         backgroundColor: 'transparent',
       }
     ], { duration: FLY_DURATION, easing: EASE_OUT, fill: 'forwards' }).onfinish = () => {
-      // Swap: remove clone, reveal lightbox card
       clone.remove();
       flyClone = null;
-      card.style.opacity = '1';
-      infoEl.style.opacity = '';
+      card.style.opacity = '';
       isAnimating = false;
     };
 
-    // Info slide up
+    // 6. Info slides up near end of flight
     infoEl.animate([
       { opacity: 0, transform: 'translateY(16px)' },
       { opacity: 1, transform: 'translateY(0)' }
-    ], { duration: 350, easing: 'ease-out', delay: FLY_DURATION - 100, fill: 'forwards' });
+    ], { duration: 300, easing: 'ease-out', delay: FLY_DURATION - 80, fill: 'forwards' });
 
   } else {
-    // No source element, simple fade in
     lb.classList.add('open');
     backdrop.style.opacity = '0';
     backdrop.animate([
@@ -1060,63 +1037,50 @@ function closeLightbox() {
   ], { duration: FLY_DURATION, easing: 'ease-in', fill: 'forwards' });
 
   if (sourcePhotoEl) {
-    // FLIP close: clone from lightbox position, fly back to source
+    // Measure actual positions
     const cardRect = card.getBoundingClientRect();
     const srcRect = sourcePhotoEl.getBoundingClientRect();
     const rot = parseFloat(sourcePhotoEl.dataset.rotation) || 0;
-
-    // Create a clone for fly-back
-    const clone = sourcePhotoEl.cloneNode(true);
-    clone.style.position = 'fixed';
-    clone.style.left = cardRect.left + 'px';
-    clone.style.top = cardRect.top + 'px';
-    clone.style.width = cardRect.width + 'px';
-    clone.style.margin = '0';
-    clone.style.zIndex = '10001';
-    clone.style.pointerEvents = 'none';
-    clone.style.transition = 'none';
-    clone.style.transform = 'rotate(0deg)';
-    clone.style.boxShadow = '0 20px 60px rgba(0,0,0,0.6)';
-    clone.style.padding = '0';
-    clone.style.background = 'transparent';
-    const cloneLabel = clone.querySelector('.label');
-    if (cloneLabel) cloneLabel.style.display = 'none';
-    document.body.appendChild(clone);
-
-    // Hide lightbox card immediately
-    card.style.opacity = '0';
-
     const srcPadding = getComputedStyle(sourcePhotoEl).padding;
 
+    // Clone at card position, styled like lightbox (no border)
+    const clone = sourcePhotoEl.cloneNode(true);
+    clone.style.cssText = `
+      position:fixed; left:${cardRect.left}px; top:${cardRect.top}px;
+      width:${cardRect.width}px; height:${cardRect.height}px;
+      margin:0; z-index:10001; pointer-events:none; transition:none;
+      transform:rotate(0deg); padding:0; background:transparent;
+      box-shadow:0 8px 40px rgba(0,0,0,0.5);
+    `;
+    const cl = clone.querySelector('.label');
+    if (cl) cl.style.opacity = '0';
+    document.body.appendChild(clone);
+
+    // Hide card
+    card.style.opacity = '0';
+
+    // Fly back
     clone.animate([
       {
-        left: cardRect.left + 'px',
-        top: cardRect.top + 'px',
-        width: cardRect.width + 'px',
-        transform: 'rotate(0deg)',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
-        padding: '0px 0px 0px 0px',
+        left: cardRect.left + 'px', top: cardRect.top + 'px',
+        width: cardRect.width + 'px', height: cardRect.height + 'px',
+        transform: 'rotate(0deg)', padding: '0px',
         backgroundColor: 'transparent',
-        opacity: 1,
+        boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
       },
       {
-        left: srcRect.left + 'px',
-        top: srcRect.top + 'px',
-        width: srcRect.width + 'px',
-        transform: `rotate(${rot}deg)`,
+        left: srcRect.left + 'px', top: srcRect.top + 'px',
+        width: srcRect.width + 'px', height: srcRect.height + 'px',
+        transform: 'rotate(' + rot + 'deg)', padding: srcPadding,
+        backgroundColor: '#f5f0e8',
         boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
-        padding: srcPadding,
-        backgroundColor: 'var(--paper)',
-        opacity: 1,
       }
     ], { duration: FLY_DURATION, easing: EASE_OUT, fill: 'forwards' }).onfinish = () => {
       clone.remove();
       sourcePhotoEl.style.visibility = '';
       cleanup();
     };
-
   } else {
-    // Simple fade out
     card.animate([
       { transform: 'scale(1)', opacity: 1 },
       { transform: 'scale(0.8)', opacity: 0 }

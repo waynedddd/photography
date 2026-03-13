@@ -834,6 +834,9 @@ function createFlyClone(photoEl) {
   clone.style.transition = 'none';
   // Remove hover effects
   clone.style.boxShadow = '0 2px 8px rgba(0,0,0,0.4), 0 0 1px rgba(0,0,0,0.2)';
+  // Hide label during flight
+  const label = clone.querySelector('.label');
+  if (label) label.style.display = 'none';
   document.body.appendChild(clone);
   return { clone, rect };
 }
@@ -936,6 +939,7 @@ function openLightbox(idx, direction, clickedEl) {
     card.style.opacity = '0';
 
     // Animate clone from source to target
+    // Also shrink padding and fade background to seamlessly match lightbox
     clone.animate([
       {
         left: rect.left + 'px',
@@ -943,6 +947,8 @@ function openLightbox(idx, direction, clickedEl) {
         width: rect.width + 'px',
         transform: `rotate(${rot}deg)`,
         boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+        padding: getComputedStyle(sourcePhotoEl).padding,
+        backgroundColor: 'var(--paper)',
       },
       {
         left: targetX + 'px',
@@ -950,6 +956,8 @@ function openLightbox(idx, direction, clickedEl) {
         width: targetW + 'px',
         transform: 'rotate(0deg)',
         boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
+        padding: '0px 0px 0px 0px',
+        backgroundColor: 'transparent',
       }
     ], { duration: FLY_DURATION, easing: EASE_OUT, fill: 'forwards' }).onfinish = () => {
       // Swap: hide clone, show lightbox card
@@ -1058,7 +1066,7 @@ function closeLightbox() {
     const srcRect = sourcePhotoEl.getBoundingClientRect();
     const rot = parseFloat(sourcePhotoEl.dataset.rotation) || 0;
 
-    // Create a clone of the card area (just the front image part)
+    // Create a clone for fly-back
     const clone = sourcePhotoEl.cloneNode(true);
     clone.style.position = 'fixed';
     clone.style.left = cardRect.left + 'px';
@@ -1070,12 +1078,16 @@ function closeLightbox() {
     clone.style.transition = 'none';
     clone.style.transform = 'rotate(0deg)';
     clone.style.boxShadow = '0 20px 60px rgba(0,0,0,0.6)';
-    // Override padding to match lightbox visual
-    clone.style.padding = sourcePhotoEl.style.padding || '';
+    clone.style.padding = '0';
+    clone.style.background = 'transparent';
+    const cloneLabel = clone.querySelector('.label');
+    if (cloneLabel) cloneLabel.style.display = 'none';
     document.body.appendChild(clone);
 
     // Hide lightbox card immediately
     card.style.opacity = '0';
+
+    const srcPadding = getComputedStyle(sourcePhotoEl).padding;
 
     clone.animate([
       {
@@ -1084,6 +1096,8 @@ function closeLightbox() {
         width: cardRect.width + 'px',
         transform: 'rotate(0deg)',
         boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
+        padding: '0px 0px 0px 0px',
+        backgroundColor: 'transparent',
         opacity: 1,
       },
       {
@@ -1092,6 +1106,8 @@ function closeLightbox() {
         width: srcRect.width + 'px',
         transform: `rotate(${rot}deg)`,
         boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+        padding: srcPadding,
+        backgroundColor: 'var(--paper)',
         opacity: 1,
       }
     ], { duration: FLY_DURATION, easing: EASE_OUT, fill: 'forwards' }).onfinish = () => {

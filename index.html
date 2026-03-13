@@ -918,9 +918,8 @@ function openLightbox(idx, direction, clickedEl) {
   updateLightboxContent(p, card);
   updateLightboxInfo(p);
 
-  // Step 1: make visible (display:flex) with card at source position
-  lb.classList.add('visible');
-  void lb.offsetWidth; // force layout so display:flex takes effect
+  // Disable transitions, place card at source photo position
+  card.style.transition = 'none';
 
   if (sourcePhotoEl) {
     const srcRect = sourcePhotoEl.getBoundingClientRect();
@@ -933,21 +932,25 @@ function openLightbox(idx, direction, clickedEl) {
     const srcScale = Math.min(srcRect.width / 400, srcRect.height / 300, 0.4);
     const rot = parseFloat(sourcePhotoEl.dataset.rotation) || 0;
 
-    // Place card at source position instantly (no transition)
-    card.classList.add('flying');
     card.style.transform = `translate(${dx}px, ${dy}px) scale(${srcScale}) rotate(${rot}deg)`;
     card.style.opacity = '0.5';
-    void card.offsetWidth; // force layout
-
-    // Step 2: animate to center
-    card.classList.remove('flying'); // re-enable transitions
-    card.style.transform = 'translate(0,0) scale(1) rotate(0deg)';
-    card.style.opacity = '1';
+  } else {
+    card.style.transform = 'scale(0.5)';
+    card.style.opacity = '0';
   }
 
-  // Fade in backdrop + enable pointer events
+  // Show lightbox (display:flex)
+  lb.classList.add('visible');
+
+  // Double rAF: first ensures display:flex is painted, second triggers transition
   requestAnimationFrame(() => {
-    lb.classList.add('active');
+    requestAnimationFrame(() => {
+      // Re-enable transitions and animate to center
+      card.style.transition = '';
+      card.style.transform = '';
+      card.style.opacity = '';
+      lb.classList.add('active');
+    });
   });
 }
 

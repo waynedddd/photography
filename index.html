@@ -879,9 +879,6 @@ function openLightbox(idx, direction, clickedEl) {
   updateLightboxContent(p, card);
   updateLightboxInfo(p);
 
-  // Hide source photo on desk (it's "picked up")
-  if (sourcePhotoEl) sourcePhotoEl.style.visibility = 'hidden';
-
   // Show lightbox container
   lb.classList.add('open');
 
@@ -997,12 +994,11 @@ function closeLightbox() {
 
   cardAnim.onfinish = () => {
     lb.classList.remove('open');
+    // Cancel all animations to reset styles
     card.getAnimations().forEach(a => a.cancel());
     backdrop.getAnimations().forEach(a => a.cancel());
     lb.querySelector('.info').getAnimations().forEach(a => a.cancel());
     backdrop.style.opacity = '0';
-    // Show source photo back on desk ("put it back")
-    if (sourcePhotoEl) sourcePhotoEl.style.visibility = '';
     currentLB = -1;
     sourcePhotoEl = null;
     isAnimating = false;

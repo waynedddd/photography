@@ -162,11 +162,9 @@
       justify-content: center;
       gap: 24px;
       padding: 40px 20px;
-      pointer-events: none;
     }
 
-    #lightbox.visible { display: flex; }
-    #lightbox.active { pointer-events: auto; }
+    #lightbox.open { display: flex; pointer-events: auto; }
 
     #lb-backdrop {
       position: fixed;
@@ -175,8 +173,6 @@
       cursor: zoom-out;
       opacity: 0;
     }
-
-    #lightbox.active #lb-backdrop { opacity: 1; }
 
     /* Flip card container */
     #lb-card {
@@ -848,16 +844,13 @@ function openLightbox(idx, direction, clickedEl) {
     const outX = direction === 'left' ? -120 : 120;
     const inX = direction === 'left' ? 80 : -80;
 
-    // Slide out
     card.animate([
       { transform: 'translateX(0) scale(1)', opacity: 1 },
       { transform: `translateX(${outX}px) scale(0.95)`, opacity: 0 }
     ], { duration: 250, easing: 'ease-in', fill: 'forwards' }).onfinish = () => {
-      // Swap content
       updateLightboxContent(p, card);
       updateLightboxInfo(p);
 
-      // Slide in
       card.animate([
         { transform: `translateX(${inX}px) scale(0.97)`, opacity: 0 },
         { transform: 'translateX(0) scale(1)', opacity: 1 }
@@ -866,7 +859,6 @@ function openLightbox(idx, direction, clickedEl) {
       };
     };
 
-    // Info fade
     infoEl.animate([
       { opacity: 1, transform: 'translateY(0)' },
       { opacity: 0, transform: 'translateY(8px)' }
@@ -887,10 +879,11 @@ function openLightbox(idx, direction, clickedEl) {
   updateLightboxContent(p, card);
   updateLightboxInfo(p);
 
-  lb.classList.add('visible');
-  lb.classList.add('active');
+  // Show lightbox container
+  lb.classList.add('open');
 
-  // Backdrop fade in
+  // Backdrop: animate opacity 0→1
+  backdrop.style.opacity = '0';
   backdrop.animate([
     { opacity: 0 },
     { opacity: 1 }
@@ -1000,11 +993,12 @@ function closeLightbox() {
   ], { duration: 200, easing: 'ease-in', fill: 'forwards' });
 
   cardAnim.onfinish = () => {
-    lb.classList.remove('active', 'visible');
+    lb.classList.remove('open');
     // Cancel all animations to reset styles
     card.getAnimations().forEach(a => a.cancel());
     backdrop.getAnimations().forEach(a => a.cancel());
     lb.querySelector('.info').getAnimations().forEach(a => a.cancel());
+    backdrop.style.opacity = '0';
     currentLB = -1;
     sourcePhotoEl = null;
     isAnimating = false;

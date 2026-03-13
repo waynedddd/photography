@@ -862,7 +862,8 @@ function openLightbox(idx, direction, clickedEl) {
     ], { duration: 250, easing: 'ease-in', fill: 'forwards' }).onfinish = () => {
       updateLightboxContent(p, card);
       updateLightboxInfo(p);
-      // Update sourcePhotoEl for close animation
+      // Restore previous source photo visibility, update for close animation
+      if (sourcePhotoEl) sourcePhotoEl.style.visibility = '';
       sourcePhotoEl = getPhotoElByIdx(idx);
 
       card.animate([

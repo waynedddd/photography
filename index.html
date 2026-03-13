@@ -928,15 +928,16 @@ function openLightbox(idx, direction, clickedEl) {
     // Get source rotation
     const rot = parseFloat(sourcePhotoEl.dataset.rotation) || 0;
 
+    // Hide card and info BEFORE showing lightbox to prevent flash
+    card.style.opacity = '0';
+    infoEl.style.opacity = '0';
+
     // Fade in backdrop
     lb.classList.add('open');
     backdrop.style.opacity = '0';
     backdrop.animate([
       { opacity: 0 }, { opacity: 1 }
     ], { duration: FLY_DURATION, easing: 'ease-out', fill: 'forwards' });
-
-    // Hide card during flight
-    card.style.opacity = '0';
 
     // Animate clone from source to target
     // Also shrink padding and fade background to seamlessly match lightbox
@@ -960,13 +961,11 @@ function openLightbox(idx, direction, clickedEl) {
         backgroundColor: 'transparent',
       }
     ], { duration: FLY_DURATION, easing: EASE_OUT, fill: 'forwards' }).onfinish = () => {
-      // Swap: hide clone, show lightbox card
+      // Swap: remove clone, reveal lightbox card
       clone.remove();
       flyClone = null;
-      card.style.opacity = '';
-      card.animate([
-        { opacity: 0 }, { opacity: 1 }
-      ], { duration: 150, fill: 'forwards' });
+      card.style.opacity = '1';
+      infoEl.style.opacity = '';
       isAnimating = false;
     };
 

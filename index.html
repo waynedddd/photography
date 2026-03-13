@@ -157,26 +157,27 @@
       position: fixed;
       inset: 0;
       z-index: 10000;
-      opacity: 0;
-      transition: opacity 0.3s ease;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       gap: 24px;
       padding: 40px 20px;
+      pointer-events: none;
     }
+
+    #lightbox.visible { display: flex; }
+    #lightbox.active { pointer-events: auto; }
 
     #lb-backdrop {
       position: fixed;
       inset: 0;
       background: rgba(0,0,0,0.92);
       cursor: zoom-out;
+      opacity: 0;
+      transition: opacity 0.4s ease;
     }
 
-    #lightbox.active {
-      display: flex;
-      opacity: 1;
-    }
+    #lightbox.active #lb-backdrop { opacity: 1; }
 
     /* Flip card container */
     #lb-card {
@@ -184,6 +185,13 @@
       z-index: 1;
       perspective: 1200px;
       cursor: pointer;
+      /* fly-in: animated via JS */
+      transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+                  opacity 0.4s ease;
+    }
+
+    #lb-card.flying {
+      transition: none; /* disable during setup */
     }
 
     #lb-card-inner {
@@ -195,6 +203,33 @@
 
     #lb-card.flipped #lb-card-inner {
       transform: rotateY(180deg);
+    }
+
+    /* Slide transitions for photo switching */
+    #lb-card.slide-out-left {
+      transition: transform 0.3s cubic-bezier(0.4, 0, 1, 1), opacity 0.25s ease;
+      transform: translateX(-120px) scale(0.95);
+      opacity: 0;
+    }
+    #lb-card.slide-out-right {
+      transition: transform 0.3s cubic-bezier(0.4, 0, 1, 1), opacity 0.25s ease;
+      transform: translateX(120px) scale(0.95);
+      opacity: 0;
+    }
+    #lb-card.slide-in-left {
+      transition: none;
+      transform: translateX(80px) scale(0.97);
+      opacity: 0;
+    }
+    #lb-card.slide-in-right {
+      transition: none;
+      transform: translateX(-80px) scale(0.97);
+      opacity: 0;
+    }
+    #lb-card.slide-settle {
+      transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease;
+      transform: translateX(0) scale(1);
+      opacity: 1;
     }
 
     #lb-front, #lb-back {
@@ -286,6 +321,14 @@
       position: relative;
       z-index: 1;
       cursor: zoom-out;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.4s ease 0.15s, transform 0.4s ease 0.15s;
+    }
+
+    #lightbox.active .info {
+      opacity: 1;
+      transform: translateY(0);
     }
 
     #lightbox .info .title {
@@ -702,7 +745,7 @@ shuffled.forEach((p, i) => {
 
   el.addEventListener('click', (e) => {
     e.stopPropagation();
-    openLightbox(photos.indexOf(p));
+    openLightbox(photos.indexOf(p), null, el);
   });
 
   // Bring to front on hover
@@ -802,7 +845,7 @@ document.body.addEventListener('touchend', (e) => {
     const photoEl = el && el.closest('.photo');
     if (photoEl) {
       const idx = parseInt(photoEl.dataset.idx);
-      openLightbox(photos.indexOf(shuffled[idx]));
+      openLightbox(photos.indexOf(shuffled[idx]), null, photoEl);
     }
   }
   touchStart = null;
@@ -810,17 +853,106 @@ document.body.addEventListener('touchend', (e) => {
 
 // --- Lightbox ---
 let currentLB = -1;
+let sourcePhotoEl = null; // the .photo element that was clicked
+let isAnimating = false;
 
-function openLightbox(idx) {
+function getPhotoElByIdx(idx) {
+  // find the .photo element whose shuffled photo matches photos[idx]
+  const photoEls = document.querySelectorAll('.photo');
+  for (const el of photoEls) {
+    const si = parseInt(el.dataset.idx);
+    if (shuffled[si] === photos[idx]) return el;
+  }
+  return null;
+}
+
+function openLightbox(idx, direction, clickedEl) {
+  if (isAnimating) return;
+
+  const isSwitch = currentLB >= 0; // switching between photos
   currentLB = idx;
   const p = photos[idx];
   const lb = document.getElementById('lightbox');
   const card = document.getElementById('lb-card');
+
+  // If switching (left/right), do slide animation
+  if (isSwitch && direction) {
+    isAnimating = true;
+    const outClass = direction === 'left' ? 'slide-out-left' : 'slide-out-right';
+    const inClass = direction === 'left' ? 'slide-in-left' : 'slide-in-right';
+
+    card.classList.remove('slide-settle', 'slide-in-left', 'slide-in-right');
+    card.classList.add(outClass);
+
+    setTimeout(() => {
+      // Update content while invisible
+      updateLightboxContent(p, card);
+      card.classList.remove(outClass);
+      card.classList.add(inClass);
+      // Force reflow
+      void card.offsetWidth;
+      requestAnimationFrame(() => {
+        card.classList.remove(inClass);
+        card.classList.add('slide-settle');
+        isAnimating = false;
+      });
+    }, 280);
+
+    // Update info with fade
+    const info = lb.querySelector('.info');
+    info.style.opacity = '0';
+    info.style.transform = 'translateY(12px)';
+    setTimeout(() => {
+      updateLightboxInfo(p);
+      info.style.opacity = '';
+      info.style.transform = '';
+    }, 300);
+
+    return;
+  }
+
+  // Fresh open — fly from source photo
+  if (clickedEl) sourcePhotoEl = clickedEl;
+  else sourcePhotoEl = getPhotoElByIdx(idx);
+
+  updateLightboxContent(p, card);
+  updateLightboxInfo(p);
+
+  lb.classList.add('visible');
+
+  if (sourcePhotoEl) {
+    // Get source rect in viewport coords
+    const srcRect = sourcePhotoEl.getBoundingClientRect();
+    const srcCX = srcRect.left + srcRect.width / 2;
+    const srcCY = srcRect.top + srcRect.height / 2;
+    const destCX = window.innerWidth / 2;
+    const destCY = window.innerHeight / 2;
+    const dx = srcCX - destCX;
+    const dy = srcCY - destCY;
+    const srcScale = Math.min(srcRect.width / 400, srcRect.height / 300, 0.4);
+
+    // Get source rotation
+    const rot = parseFloat(sourcePhotoEl.dataset.rotation) || 0;
+
+    card.classList.add('flying');
+    card.style.transform = `translate(${dx}px, ${dy}px) scale(${srcScale}) rotate(${rot}deg)`;
+    card.style.opacity = '0.7';
+
+    void card.offsetWidth; // force reflow
+
+    card.classList.remove('flying');
+    card.style.transform = '';
+    card.style.opacity = '';
+  }
+
+  requestAnimationFrame(() => {
+    lb.classList.add('active');
+  });
+}
+
+function updateLightboxContent(p, card) {
   card.classList.remove('flipped');
   document.getElementById('lb-img').src = p.url;
-  document.getElementById('lb-title').textContent = p.title;
-  document.getElementById('lb-meta').textContent = p.meta;
-  document.getElementById('lb-desc').textContent = p.desc;
   document.getElementById('lb-back-title').textContent = p.title;
   document.getElementById('lb-back-meta').textContent = p.meta;
   const noteEl = document.getElementById('lb-back-note');
@@ -831,8 +963,12 @@ function openLightbox(idx) {
     noteEl.innerHTML = '';
     card.classList.add('no-note');
   }
-  lb.style.display = 'flex';
-  requestAnimationFrame(() => lb.classList.add('active'));
+}
+
+function updateLightboxInfo(p) {
+  document.getElementById('lb-title').textContent = p.title;
+  document.getElementById('lb-meta').textContent = p.meta;
+  document.getElementById('lb-desc').textContent = p.desc;
 }
 
 function toggleFlip(e) {
@@ -862,18 +998,41 @@ cardEl.addEventListener('touchstart', (e) => {
 cardEl.addEventListener('touchend', (e) => {
   const dx = e.changedTouches[0].clientX - cardTouchX;
   if (Math.abs(dx) > 50) {
-    e.preventDefault(); // prevent click from firing
-    if (dx < 0) openLightbox((currentLB + 1) % photos.length);
-    else openLightbox((currentLB - 1 + photos.length) % photos.length);
+    e.preventDefault();
+    if (dx < 0) openLightbox((currentLB + 1) % photos.length, 'left');
+    else openLightbox((currentLB - 1 + photos.length) % photos.length, 'right');
   }
-  // tap (small dx) → let click event handle flip
 });
 
 function closeLightbox() {
   const lb = document.getElementById('lightbox');
+  const card = document.getElementById('lb-card');
+
+  // Fly back to source
+  if (sourcePhotoEl) {
+    const srcRect = sourcePhotoEl.getBoundingClientRect();
+    const srcCX = srcRect.left + srcRect.width / 2;
+    const srcCY = srcRect.top + srcRect.height / 2;
+    const destCX = window.innerWidth / 2;
+    const destCY = window.innerHeight / 2;
+    const dx = srcCX - destCX;
+    const dy = srcCY - destCY;
+    const srcScale = Math.min(srcRect.width / 400, srcRect.height / 300, 0.4);
+    const rot = parseFloat(sourcePhotoEl.dataset.rotation) || 0;
+
+    card.style.transform = `translate(${dx}px, ${dy}px) scale(${srcScale}) rotate(${rot}deg)`;
+    card.style.opacity = '0';
+  }
+
   lb.classList.remove('active');
-  setTimeout(() => { lb.style.display = 'none'; }, 300);
+  setTimeout(() => {
+    lb.classList.remove('visible');
+    card.style.transform = '';
+    card.style.opacity = '';
+    card.classList.remove('slide-settle', 'slide-out-left', 'slide-out-right', 'slide-in-left', 'slide-in-right');
+  }, 500);
   currentLB = -1;
+  sourcePhotoEl = null;
 }
 
 // Arrow keys in lightbox
@@ -881,10 +1040,10 @@ document.addEventListener('keydown', (e) => {
   if (currentLB < 0) return;
   if (e.key === 'Escape') closeLightbox();
   if (e.key === 'ArrowRight') {
-    openLightbox((currentLB + 1) % photos.length);
+    openLightbox((currentLB + 1) % photos.length, 'left');
   }
   if (e.key === 'ArrowLeft') {
-    openLightbox((currentLB - 1 + photos.length) % photos.length);
+    openLightbox((currentLB - 1 + photos.length) % photos.length, 'right');
   }
 });
 
@@ -896,14 +1055,12 @@ lbEl.addEventListener('touchstart', (e) => {
   lbTouchY = e.touches[0].clientY;
 }, { passive: true });
 lbEl.addEventListener('touchend', (e) => {
-  // Tap on card is handled by card's own touch handler (flip)
   if (e.target.closest('#lb-card')) return;
   const dx = e.changedTouches[0].clientX - lbTouchX;
   if (Math.abs(dx) > 50) {
-    if (dx < 0) openLightbox((currentLB + 1) % photos.length);
-    else openLightbox((currentLB - 1 + photos.length) % photos.length);
+    if (dx < 0) openLightbox((currentLB + 1) % photos.length, 'left');
+    else openLightbox((currentLB - 1 + photos.length) % photos.length, 'right');
   } else if (Math.abs(dx) < 10) {
-    // Tap on backdrop or info → close
     closeLightbox();
   }
 });

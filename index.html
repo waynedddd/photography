@@ -174,7 +174,6 @@
       background: rgba(0,0,0,0.92);
       cursor: zoom-out;
       opacity: 0;
-      transition: opacity 0.4s ease;
     }
 
     #lightbox.active #lb-backdrop { opacity: 1; }
@@ -185,13 +184,6 @@
       z-index: 1;
       perspective: 1200px;
       cursor: pointer;
-      /* fly-in: animated via JS */
-      transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
-                  opacity 0.4s ease;
-    }
-
-    #lb-card.flying {
-      transition: none; /* disable during setup */
     }
 
     #lb-card-inner {
@@ -203,33 +195,6 @@
 
     #lb-card.flipped #lb-card-inner {
       transform: rotateY(180deg);
-    }
-
-    /* Slide transitions for photo switching */
-    #lb-card.slide-out-left {
-      transition: transform 0.3s cubic-bezier(0.4, 0, 1, 1), opacity 0.25s ease;
-      transform: translateX(-120px) scale(0.95);
-      opacity: 0;
-    }
-    #lb-card.slide-out-right {
-      transition: transform 0.3s cubic-bezier(0.4, 0, 1, 1), opacity 0.25s ease;
-      transform: translateX(120px) scale(0.95);
-      opacity: 0;
-    }
-    #lb-card.slide-in-left {
-      transition: none;
-      transform: translateX(80px) scale(0.97);
-      opacity: 0;
-    }
-    #lb-card.slide-in-right {
-      transition: none;
-      transform: translateX(-80px) scale(0.97);
-      opacity: 0;
-    }
-    #lb-card.slide-settle {
-      transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease;
-      transform: translateX(0) scale(1);
-      opacity: 1;
     }
 
     #lb-front, #lb-back {
@@ -321,14 +286,6 @@
       position: relative;
       z-index: 1;
       cursor: zoom-out;
-      opacity: 0;
-      transform: translateY(12px);
-      transition: opacity 0.4s ease 0.15s, transform 0.4s ease 0.15s;
-    }
-
-    #lightbox.active .info {
-      opacity: 1;
-      transform: translateY(0);
     }
 
     #lightbox .info .title {
@@ -853,105 +810,111 @@ document.body.addEventListener('touchend', (e) => {
 
 // --- Lightbox ---
 let currentLB = -1;
-let sourcePhotoEl = null; // the .photo element that was clicked
+let sourcePhotoEl = null;
 let isAnimating = false;
+const EASE_OUT = 'cubic-bezier(0.22, 1, 0.36, 1)';
 
 function getPhotoElByIdx(idx) {
-  // find the .photo element whose shuffled photo matches photos[idx]
-  const photoEls = document.querySelectorAll('.photo');
-  for (const el of photoEls) {
-    const si = parseInt(el.dataset.idx);
-    if (shuffled[si] === photos[idx]) return el;
+  const els = document.querySelectorAll('.photo');
+  for (const el of els) {
+    if (shuffled[parseInt(el.dataset.idx)] === photos[idx]) return el;
   }
   return null;
+}
+
+function getSourceTransform(el) {
+  const srcRect = el.getBoundingClientRect();
+  const dx = srcRect.left + srcRect.width / 2 - window.innerWidth / 2;
+  const dy = srcRect.top + srcRect.height / 2 - window.innerHeight / 2;
+  const s = Math.min(srcRect.width / 400, srcRect.height / 300, 0.4);
+  const rot = parseFloat(el.dataset.rotation) || 0;
+  return { dx, dy, s, rot };
 }
 
 function openLightbox(idx, direction, clickedEl) {
   if (isAnimating) return;
 
-  const isSwitch = currentLB >= 0; // switching between photos
+  const isSwitch = currentLB >= 0;
   currentLB = idx;
   const p = photos[idx];
   const lb = document.getElementById('lightbox');
   const card = document.getElementById('lb-card');
+  const backdrop = document.getElementById('lb-backdrop');
+  const infoEl = lb.querySelector('.info');
 
-  // If switching (left/right), do slide animation
+  // --- Switching photos (slide) ---
   if (isSwitch && direction) {
     isAnimating = true;
-    const outClass = direction === 'left' ? 'slide-out-left' : 'slide-out-right';
-    const inClass = direction === 'left' ? 'slide-in-left' : 'slide-in-right';
+    const outX = direction === 'left' ? -120 : 120;
+    const inX = direction === 'left' ? 80 : -80;
 
-    card.classList.remove('slide-settle', 'slide-in-left', 'slide-in-right');
-    card.classList.add(outClass);
-
-    setTimeout(() => {
-      // Update content while invisible
+    // Slide out
+    card.animate([
+      { transform: 'translateX(0) scale(1)', opacity: 1 },
+      { transform: `translateX(${outX}px) scale(0.95)`, opacity: 0 }
+    ], { duration: 250, easing: 'ease-in', fill: 'forwards' }).onfinish = () => {
+      // Swap content
       updateLightboxContent(p, card);
-      card.classList.remove(outClass);
-      card.classList.add(inClass);
-      // Force reflow
-      void card.offsetWidth;
-      requestAnimationFrame(() => {
-        card.classList.remove(inClass);
-        card.classList.add('slide-settle');
-        isAnimating = false;
-      });
-    }, 280);
-
-    // Update info with fade
-    const info = lb.querySelector('.info');
-    info.style.opacity = '0';
-    info.style.transform = 'translateY(12px)';
-    setTimeout(() => {
       updateLightboxInfo(p);
-      info.style.opacity = '';
-      info.style.transform = '';
-    }, 300);
+
+      // Slide in
+      card.animate([
+        { transform: `translateX(${inX}px) scale(0.97)`, opacity: 0 },
+        { transform: 'translateX(0) scale(1)', opacity: 1 }
+      ], { duration: 300, easing: EASE_OUT, fill: 'forwards' }).onfinish = () => {
+        isAnimating = false;
+      };
+    };
+
+    // Info fade
+    infoEl.animate([
+      { opacity: 1, transform: 'translateY(0)' },
+      { opacity: 0, transform: 'translateY(8px)' }
+    ], { duration: 200, easing: 'ease-in', fill: 'forwards' }).onfinish = () => {
+      infoEl.animate([
+        { opacity: 0, transform: 'translateY(8px)' },
+        { opacity: 1, transform: 'translateY(0)' }
+      ], { duration: 250, easing: 'ease-out', fill: 'forwards' });
+    };
 
     return;
   }
 
-  // Fresh open — fly from source photo
+  // --- Fresh open (fly-in) ---
   if (clickedEl) sourcePhotoEl = clickedEl;
   else sourcePhotoEl = getPhotoElByIdx(idx);
 
   updateLightboxContent(p, card);
   updateLightboxInfo(p);
 
-  // Disable transitions, place card at source photo position
-  card.style.transition = 'none';
+  lb.classList.add('visible');
+  lb.classList.add('active');
 
+  // Backdrop fade in
+  backdrop.animate([
+    { opacity: 0 },
+    { opacity: 1 }
+  ], { duration: 400, easing: 'ease-out', fill: 'forwards' });
+
+  // Card fly-in
   if (sourcePhotoEl) {
-    const srcRect = sourcePhotoEl.getBoundingClientRect();
-    const srcCX = srcRect.left + srcRect.width / 2;
-    const srcCY = srcRect.top + srcRect.height / 2;
-    const destCX = window.innerWidth / 2;
-    const destCY = window.innerHeight / 2;
-    const dx = srcCX - destCX;
-    const dy = srcCY - destCY;
-    const srcScale = Math.min(srcRect.width / 400, srcRect.height / 300, 0.4);
-    const rot = parseFloat(sourcePhotoEl.dataset.rotation) || 0;
-
-    card.style.transform = `translate(${dx}px, ${dy}px) scale(${srcScale}) rotate(${rot}deg)`;
-    card.style.opacity = '0.5';
+    const src = getSourceTransform(sourcePhotoEl);
+    card.animate([
+      { transform: `translate(${src.dx}px, ${src.dy}px) scale(${src.s}) rotate(${src.rot}deg)`, opacity: 0.4 },
+      { transform: 'translate(0,0) scale(1) rotate(0deg)', opacity: 1 }
+    ], { duration: 500, easing: EASE_OUT, fill: 'forwards' });
   } else {
-    card.style.transform = 'scale(0.5)';
-    card.style.opacity = '0';
+    card.animate([
+      { transform: 'scale(0.6)', opacity: 0 },
+      { transform: 'scale(1)', opacity: 1 }
+    ], { duration: 400, easing: EASE_OUT, fill: 'forwards' });
   }
 
-  // Show lightbox (display:flex)
-  lb.classList.add('visible');
-
-  // Double rAF: first ensures display:flex is painted, second triggers transition
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      // Re-enable transitions and animate to center
-      card.style.transition = '';
-      card.style.transform = '';
-      card.style.opacity = '';
-      lb.classList.add('active');
-    });
-  });
+  // Info slide up
+  infoEl.animate([
+    { opacity: 0, transform: 'translateY(16px)' },
+    { opacity: 1, transform: 'translateY(0)' }
+  ], { duration: 400, easing: 'ease-out', delay: 150, fill: 'forwards' });
 }
 
 function updateLightboxContent(p, card) {
@@ -982,23 +945,17 @@ function toggleFlip(e) {
   card.classList.toggle('flipped');
 }
 
-// Click card to flip (works on both desktop and mobile)
 document.getElementById('lb-card').addEventListener('click', (e) => {
   e.stopPropagation();
   toggleFlip(e);
 });
 
-// Desktop: click info area to close
-document.querySelector('#lightbox .info').addEventListener('click', (e) => {
-  closeLightbox();
-});
+document.querySelector('#lightbox .info').addEventListener('click', () => closeLightbox());
 
-// Card swipe to navigate (mobile)
+// Card swipe (mobile)
 let cardTouchX = 0;
 const cardEl = document.getElementById('lb-card');
-cardEl.addEventListener('touchstart', (e) => {
-  cardTouchX = e.touches[0].clientX;
-}, { passive: true });
+cardEl.addEventListener('touchstart', (e) => { cardTouchX = e.touches[0].clientX; }, { passive: true });
 cardEl.addEventListener('touchend', (e) => {
   const dx = e.changedTouches[0].clientX - cardTouchX;
   if (Math.abs(dx) > 50) {
@@ -1009,60 +966,63 @@ cardEl.addEventListener('touchend', (e) => {
 });
 
 function closeLightbox() {
+  if (isAnimating) return;
+  isAnimating = true;
   const lb = document.getElementById('lightbox');
   const card = document.getElementById('lb-card');
+  const backdrop = document.getElementById('lb-backdrop');
 
-  // Fly back to source
+  // Backdrop fade out
+  backdrop.animate([
+    { opacity: 1 },
+    { opacity: 0 }
+  ], { duration: 400, easing: 'ease-in', fill: 'forwards' });
+
+  // Card fly-out
+  let cardAnim;
   if (sourcePhotoEl) {
-    const srcRect = sourcePhotoEl.getBoundingClientRect();
-    const srcCX = srcRect.left + srcRect.width / 2;
-    const srcCY = srcRect.top + srcRect.height / 2;
-    const destCX = window.innerWidth / 2;
-    const destCY = window.innerHeight / 2;
-    const dx = srcCX - destCX;
-    const dy = srcCY - destCY;
-    const srcScale = Math.min(srcRect.width / 400, srcRect.height / 300, 0.4);
-    const rot = parseFloat(sourcePhotoEl.dataset.rotation) || 0;
-
-    // Ensure transition is on
-    card.classList.remove('flying');
-    card.style.transform = `translate(${dx}px, ${dy}px) scale(${srcScale}) rotate(${rot}deg)`;
-    card.style.opacity = '0';
+    const src = getSourceTransform(sourcePhotoEl);
+    cardAnim = card.animate([
+      { transform: 'translate(0,0) scale(1) rotate(0deg)', opacity: 1 },
+      { transform: `translate(${src.dx}px, ${src.dy}px) scale(${src.s}) rotate(${src.rot}deg)`, opacity: 0 }
+    ], { duration: 450, easing: EASE_OUT, fill: 'forwards' });
   } else {
-    card.style.transform = 'scale(0.9)';
-    card.style.opacity = '0';
+    cardAnim = card.animate([
+      { transform: 'scale(1)', opacity: 1 },
+      { transform: 'scale(0.8)', opacity: 0 }
+    ], { duration: 350, easing: 'ease-in', fill: 'forwards' });
   }
 
-  lb.classList.remove('active');
-  setTimeout(() => {
-    lb.classList.remove('visible');
-    card.style.transform = '';
-    card.style.opacity = '';
-    card.classList.remove('slide-settle', 'slide-out-left', 'slide-out-right', 'slide-in-left', 'slide-in-right');
-  }, 500);
-  currentLB = -1;
-  sourcePhotoEl = null;
+  // Info fade out
+  lb.querySelector('.info').animate([
+    { opacity: 1 },
+    { opacity: 0 }
+  ], { duration: 200, easing: 'ease-in', fill: 'forwards' });
+
+  cardAnim.onfinish = () => {
+    lb.classList.remove('active', 'visible');
+    // Cancel all animations to reset styles
+    card.getAnimations().forEach(a => a.cancel());
+    backdrop.getAnimations().forEach(a => a.cancel());
+    lb.querySelector('.info').getAnimations().forEach(a => a.cancel());
+    currentLB = -1;
+    sourcePhotoEl = null;
+    isAnimating = false;
+  };
 }
 
-// Arrow keys in lightbox
+// Arrow keys
 document.addEventListener('keydown', (e) => {
   if (currentLB < 0) return;
   if (e.key === 'Escape') closeLightbox();
-  if (e.key === 'ArrowRight') {
-    openLightbox((currentLB + 1) % photos.length, 'left');
-  }
-  if (e.key === 'ArrowLeft') {
-    openLightbox((currentLB - 1 + photos.length) % photos.length, 'right');
-  }
+  if (e.key === 'ArrowRight') openLightbox((currentLB + 1) % photos.length, 'left');
+  if (e.key === 'ArrowLeft') openLightbox((currentLB - 1 + photos.length) % photos.length, 'right');
 });
 
-// Lightbox swipe (mobile)
-let lbTouchX = 0, lbTouchY = 0;
+// Lightbox backdrop swipe (mobile)
+let lbTouchX = 0;
 const lbEl = document.getElementById('lightbox');
-lbEl.addEventListener('touchstart', (e) => {
-  lbTouchX = e.touches[0].clientX;
-  lbTouchY = e.touches[0].clientY;
-}, { passive: true });
+lbEl.addEventListener('touchstart', (e) => { lbTouchX = e.touches[0].clientX; }, { passive: true });
 lbEl.addEventListener('touchend', (e) => {
   if (e.target.closest('#lb-card')) return;
   const dx = e.changedTouches[0].clientX - lbTouchX;

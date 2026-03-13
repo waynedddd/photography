@@ -918,10 +918,11 @@ function openLightbox(idx, direction, clickedEl) {
   updateLightboxContent(p, card);
   updateLightboxInfo(p);
 
+  // Step 1: make visible (display:flex) with card at source position
   lb.classList.add('visible');
+  void lb.offsetWidth; // force layout so display:flex takes effect
 
   if (sourcePhotoEl) {
-    // Get source rect in viewport coords
     const srcRect = sourcePhotoEl.getBoundingClientRect();
     const srcCX = srcRect.left + srcRect.width / 2;
     const srcCY = srcRect.top + srcRect.height / 2;
@@ -930,21 +931,21 @@ function openLightbox(idx, direction, clickedEl) {
     const dx = srcCX - destCX;
     const dy = srcCY - destCY;
     const srcScale = Math.min(srcRect.width / 400, srcRect.height / 300, 0.4);
-
-    // Get source rotation
     const rot = parseFloat(sourcePhotoEl.dataset.rotation) || 0;
 
+    // Place card at source position instantly (no transition)
     card.classList.add('flying');
     card.style.transform = `translate(${dx}px, ${dy}px) scale(${srcScale}) rotate(${rot}deg)`;
-    card.style.opacity = '0.7';
+    card.style.opacity = '0.5';
+    void card.offsetWidth; // force layout
 
-    void card.offsetWidth; // force reflow
-
-    card.classList.remove('flying');
-    card.style.transform = '';
-    card.style.opacity = '';
+    // Step 2: animate to center
+    card.classList.remove('flying'); // re-enable transitions
+    card.style.transform = 'translate(0,0) scale(1) rotate(0deg)';
+    card.style.opacity = '1';
   }
 
+  // Fade in backdrop + enable pointer events
   requestAnimationFrame(() => {
     lb.classList.add('active');
   });
@@ -1020,7 +1021,12 @@ function closeLightbox() {
     const srcScale = Math.min(srcRect.width / 400, srcRect.height / 300, 0.4);
     const rot = parseFloat(sourcePhotoEl.dataset.rotation) || 0;
 
+    // Ensure transition is on
+    card.classList.remove('flying');
     card.style.transform = `translate(${dx}px, ${dy}px) scale(${srcScale}) rotate(${rot}deg)`;
+    card.style.opacity = '0';
+  } else {
+    card.style.transform = 'scale(0.9)';
     card.style.opacity = '0';
   }
 
